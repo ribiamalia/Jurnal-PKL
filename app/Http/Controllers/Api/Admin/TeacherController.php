@@ -9,7 +9,6 @@ use App\Http\Resources\StudentResources;
 use App\Http\Resources\TeacherResources;
 use App\Models\Departemen;
 use Illuminate\Support\Facades\Validator;
-use PHPUnit\Framework\Attributes\Test;
 
 class TeacherController extends Controller
 {
