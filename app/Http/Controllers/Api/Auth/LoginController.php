@@ -44,7 +44,7 @@ class LoginController extends Controller
         // Return success response with token and user details
         return response()->json([
             'success'       => true,
-            'user'          => auth()->guard('api')->user()->only(['name']),
+            'user'          => auth()->guard('api')->user()->only(['id','name']),
             'roles'         => $roles,
             'permissions'   => auth()->guard('api')->user()->getAllPermissions()->pluck('name'),
             'token'         => $token

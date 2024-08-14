@@ -157,52 +157,44 @@ class UserController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $user = User::with('roles')->whereId($id)->first();
-
-        if ($user) {
-            return new UserResource(true, 'Detail Data User!', $user);
-        }
-
-        return new UserResource(false, 'Detail Data User Gagal Ditemukan!', null);
-    }
-
-    public function update(Request $request, User $user)
-    {
-        $validator = Validator::make($request->all(), [
-            'name'      => 'required',
-            'password'  => 'confirmed'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        if ($request->password == "") {
-            $user->update([
-                'name'      => $request->name,
-            ]);
-        } else {
-            $user->update([
-                'name'      => $request->name,
-                'password'  => bcrypt($request->password)
-            ]);
-        }
-
-        $user->syncRoles($request->roles);
-
-        return new UserResource(true, 'Data User Berhasil Diupdate!', $user);
-    }
-
-    // public function destroy(User $user)
+    // public function show($id)
     // {
-    //     if ($user->delete()) {
-    //         return new UserResource(true, 'Data User Berhasil Dihapus!', null);
+    //     $user = User::with('roles')->whereId($id)->first();
+
+    //     if ($user) {
+    //         return new UserResource(true, 'Detail Data User!', $user);
     //     }
 
-    //     return new UserResource(false, 'Data User Gagal Dihapus!', null);
+    //     return new UserResource(false, 'Detail Data User Gagal Ditemukan!', null);
     // }
+
+    // public function update(Request $request, User $user)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'name'      => 'required',
+    //         'password'  => 'confirmed'
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json($validator->errors(), 422);
+    //     }
+
+    //     if ($request->password == "") {
+    //         $user->update([
+    //             'name'      => $request->name,
+    //         ]);
+    //     } else {
+    //         $user->update([
+    //             'name'      => $request->name,
+    //             'password'  => bcrypt($request->password)
+    //         ]);
+    //     }
+
+    //     $user->syncRoles($request->roles);
+
+    //     return new UserResource(true, 'Data User Berhasil Diupdate!', $user);
+    // }
+
 
     public function destroy($id)
 {
@@ -247,5 +239,166 @@ class UserController extends Controller
         return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
     }
 }
+
+public function show($id)
+{
+    // Temukan user berdasarkan ID
+    $user = User::with(['roles', 'students', 'teachers', 'parents', 'industries'])->find($id);
+
+    if ($user) {
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'roles' => $user->roles->pluck('name'),
+        ];
+
+        // Tambahkan data spesifik berdasarkan peran
+        foreach ($userData['roles'] as $role) {
+            switch ($role) {
+                case 'siswa':
+                    $userData['student'] = $user->students;
+                    break;
+                case 'guru':
+                    $userData['teacher'] = $user->teachers;
+                    break;
+                case 'orang tua':
+                    $userData['parent'] = $user->parents;
+                    break;
+                case 'industri':
+                    $userData['industry'] = $user->industry;
+                    break;
+            }
+        }
+
+        return new UserResource(true, 'Detail Data User', $userData);
+    }
+
+    return new UserResource(false, 'Detail Data User Gagal Ditemukan', null);
+}
+
+public function update(Request $request, $id)
+{
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['error' => 'User tidak ditemukan.'], 404);
+    }
+
+    $validator = Validator::make($request->all(), [
+        'name'      => 'required',
+        'password'  => 'nullable|confirmed',
+        'roles'     => 'required'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    // Update user data
+    $user->name = $request->name;
+
+    if ($request->password) {
+        $user->password = bcrypt($request->password);
+    }
+
+    $user->save();
+
+    // Update roles
+    $user->syncRoles($request->roles);
+
+    try {
+        // Update related data based on role
+        foreach ($request->roles as $role) {
+            switch ($role) {
+                case 'siswa':
+                    $this->updateStudent($user, $request);
+                    break;
+                case 'guru':
+                    $this->updateTeacher($user, $request);
+                    break;
+                case 'orang tua':
+                    $this->updateParent($user, $request);
+                    break;
+                case 'industri':
+                    $this->updateIndustry($user, $request);
+                    break;
+            }
+        }
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+    }
+
+    return new UserResource(true, 'Data User Berhasil Diupdate!', $user);
+}
+
+private function updateStudent($user, $request)
+{
+    $student = $user->students()->first();
+
+    if ($student) {
+        $student->update([
+            'name'        => $request->name,
+            'nis'         => $request->nis,
+            'placeOfBirth'=> $request->placeOfBirth,
+            'dateOfBirth' => $request->dateOfBirth,
+            'gender'      => $request->gender,
+            'bloodType'   => $request->bloodType,
+            'alamat'      => $request->alamat,
+            'class_id'    => $request->class_id,
+            'industri_id' => $request->industri_id,
+            'departemen_id' => $request->departemen_id,
+            'parents_id'  => $request->parents_id,
+            'teacher_id'  => $request->teacher_id,
+        ]);
+    }
+}
+
+private function updateTeacher($user, $request)
+{
+    $teacher = $user->teachers()->first();
+
+    if ($teacher) {
+        $teacher->update([
+            'name'        => $request->name,
+            'no_hp'       => $request->no_hp,
+            'departemen_id' => $request->departemen_id,
+        ]);
+    }
+}
+
+private function updateParent($user, $request)
+{
+    $parent = $user->parents()->first();
+
+    if ($parent) {
+        $parent->update([
+            'nama'        => $request->nama,
+            'gender'      => $request->gender,
+            'placeOfBirth'=> $request->placeOfBirth,
+            'dateOfBirth' => $request->dateOfBirth,
+            'alamat'      => $request->alamat,
+            'occupation'  => $request->occupation,
+            'phoneNumber' => $request->phoneNumber,
+        ]);
+    }
+}
+
+private function updateIndustry($user, $request)
+{
+    $industry = $user->industry()->first();
+
+    if ($industry) {
+        $industry->update([
+            'name'        => $request->name,
+            'bidang'      => $request->bidang,
+            'alamat'      => $request->alamat,
+            'longitude'   => $request->longitude,
+            'latitude'    => $request->latitude,
+            'industryMentorName' => $request->industryMentorName,
+            'industryMentorNo'   => $request->industryMentorNo,
+        ]);
+    }
+}
+
 
 }

@@ -29,4 +29,9 @@ class Industry extends Model
     {
         return $this->hasOne(Student::class);
     }
+
+    public function visits()
+    {
+        return $this->hasMany(Visits::class);
+    }
 }
