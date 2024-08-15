@@ -34,8 +34,8 @@ Route::prefix('admin')->group(function () {
     //group route with middleware "auth:api"
     Route::group(['middleware' => 'auth:api'], function () {
         //dashboard
-        // Route::get('/dashboard',
-        // App\Http\Controllers\Api\Admin\DashboardController::class);
+        Route::get('/dashboard',
+        App\Http\Controllers\Api\Admin\DashboardController::class);
 
         //permissions
         Route::get('/permissions', [\App\Http\Controllers\Api\Admin\PermissionController::class, 'index'])

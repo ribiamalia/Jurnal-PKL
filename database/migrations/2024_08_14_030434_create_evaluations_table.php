@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('evaluations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->references('id')->on('students')->cascadeOnDelete();
+            $table->foreignId('industri_id')->references('id')->on('industries')->cascadeOnDelete();
+            $table->text('skills')->nullable();
+            $table->string('score');
             $table->timestamps();
         });
     }
