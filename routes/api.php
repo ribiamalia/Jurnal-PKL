@@ -64,8 +64,7 @@ Route::prefix('admin')->group(function () {
 
         Route::apiResource('/parent', \App\Http\Controllers\Api\Admin\ParentController::class);
 
-        Route::apiResource('/student', \App\Http\Controllers\Api\Admin\StudentController::class)
-        ->middleware('permission:users.index');
+        Route::apiResource('/student', \App\Http\Controllers\Api\Admin\StudentController::class);
 
         Route::apiResource('/industri', \App\Http\Controllers\Api\Admin\IndustriController::class);
 
