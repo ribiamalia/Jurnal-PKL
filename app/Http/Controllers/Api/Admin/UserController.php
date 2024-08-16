@@ -76,6 +76,12 @@ class UserController extends Controller
 
     private function createStudent($user, $request)
     {
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('students', 'public');
+        }
+
         $student = Student::create([
             'user_id'     => $user->id,
             'name'        => $request->name,
@@ -90,6 +96,7 @@ class UserController extends Controller
             'departemen_id' => $request->departemen_id,
             'parents_id'  => $request->parents_id,
             'teacher_id'  => $request->teacher_id,
+            'image' => $imagePath
         ]);
 
         if (!$student) {
