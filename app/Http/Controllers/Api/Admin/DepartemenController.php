@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Departemen;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\DepartemenResources;
+use App\Models\Classes;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class DepartemenController extends Controller
@@ -92,4 +94,26 @@ class DepartemenController extends Controller
         //return failed with Api Resource
         return new DepartemenResources(false, 'Detail Data Jurusan Tidak Ditemukan!', null);
     }
+
+    public function destroy($id)
+    {
+        // Temukan departemen
+        $departemen = Departemen::find($id);
+
+        if ($departemen) {
+            // Set departemen_id di tabel classes menjadi null
+            Classes::where('departemen_id', $id)->update(['departemen_id' => null]);
+            User::where('departemen_id', $id)->update(['departemen_id' => null]);
+
+            // Hapus departemen
+            $departemen->delete();
+
+            // Return success response
+            return new DepartemenResources(true, 'Data Jurusan Berhasil Dihapus!', null);
+        }
+
+        // Return failed response jika departemen tidak ditemukan
+        return new DepartemenResources(false, 'Data Jurusan Tidak Ditemukan!', null);
+    }
+
 }

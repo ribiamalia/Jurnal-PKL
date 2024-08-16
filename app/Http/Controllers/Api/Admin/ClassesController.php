@@ -15,7 +15,7 @@ class ClassesController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'  => 'required',
-            'departemen_id' => 'required'
+            'departemen_id' => 'nullable'
         ]);
 
         if($validator->fails()) {
@@ -60,7 +60,7 @@ class ClassesController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:classes,name,' . $id,
-            'departemen_id' => 'required',
+            'departemen_id' => 'nullable',
         ]);
     
         if ($validator->fails()) {
@@ -98,6 +98,8 @@ class ClassesController extends Controller
         //return failed with Api Resource
         return new ClassesResources(false, 'Detail Data Kelas Tidak Ditemukan!', null);
     }
+
+    
 }
     
 
