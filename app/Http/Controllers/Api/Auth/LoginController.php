@@ -17,39 +17,42 @@ class LoginController extends Controller
      */
     public function index(Request $request)
     {
-        // Set validation rules
+        // Validasi input pengguna
         $validator = Validator::make($request->all(), [
             'name'     => 'required',
             'password' => 'required',
         ]);
-
-        // Return validation errors if any
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-
-        // Get "name" and "password" from input
-        $credentials = $request->only('name', 'password');
-
-        // Check if credentials are valid
-        if (!$token = auth()->guard('api')->attempt($credentials)) {
-            // Return login failed response
+    
+        // Coba autentikasi pengguna
+        if (!$token = auth()->guard('api')->attempt($request->only('name', 'password'))) {
             return response()->json([
                 'success' => false,
                 'message' => 'Username or Password is incorrect'
             ], 400);
         }
-
-        $roles = auth()->guard('api')->user()->roles->pluck('name')->implode(',');
-        // Return success response with token and user details
+    
+        // Dapatkan data pengguna yang login
+        $user = auth()->guard('api')->user()->load('students');
+    
+        // Susun respon sukses
         return response()->json([
             'success'       => true,
-            'user'          => auth()->guard('api')->user()->only(['id','name']),
-            'roles'         => $roles,
-            'permissions'   => auth()->guard('api')->user()->getAllPermissions()->pluck('name'),
+            'user'          => [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'industri_id'   => optional($user->student)->industri_id, // Alternatif untuk menangani null dengan lebih ringkas
+            ],
+            'roles'         => $user->roles->pluck('name')->implode(','),
+            'permissions'   => $user->getAllPermissions()->pluck('name'),
             'token'         => $token
         ], 200);
     }
+    
+
 
     /**
      * Handle user logout.
