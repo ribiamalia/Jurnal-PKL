@@ -18,6 +18,7 @@ class Industry extends Model
        'latitude',
         'industryMentorName',
         'industryMentorNo',
+        'duration'
     ];
 
     public function users()

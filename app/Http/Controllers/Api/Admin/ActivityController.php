@@ -26,6 +26,7 @@ class ActivityController extends Controller
         };
 
         $activity = Activity::create([
+            'user_id'       => auth()->guard('api')->user()->id,
         'date' => $request->date,
         'start_time' => $request->start_time,
         'end_time' => $request->end_time,
@@ -57,6 +58,7 @@ class ActivityController extends Controller
         };
 
         $activity = Activity::create([
+            'user_id'       => auth()->guard('api')->user()->id,
         'date' => $request->date,
         'start_time' => $request->start_time,
         'end_time' => $request->end_time,

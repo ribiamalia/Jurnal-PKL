@@ -22,6 +22,7 @@ class IndustriController extends Controller
        'latitude' => 'required',
         'industryMentorName' => 'required',
         'industryMentorNo' => 'required',
+        'duartion'  => 'nullable'
 
         ]);
 
@@ -38,6 +39,7 @@ class IndustriController extends Controller
        'latitude' => $request->latitude,
         'industryMentorName' => $request->industryMentorName,
         'industryMentorNo' => $request->industryMentorNo,
+        'duration' => $request->duration,
 
         ]);
 
@@ -58,6 +60,7 @@ class IndustriController extends Controller
            'latitude' => 'required',
             'industryMentorName' => 'required',
             'industryMentorNo' => 'required',
+            'duration'      => 'nullable'
     
             ]);
 
@@ -77,6 +80,7 @@ class IndustriController extends Controller
                'latitude' => $request->latitude,
                 'industryMentorName' => $request->industryMentorName,
                 'industryMentorNo' => $request->industryMentorNo,
+                'duartion' => $request->duration,
   
         ]);
 

@@ -12,6 +12,8 @@ use App\Models\Industry;
 use App\Models\Student;
 use App\Models\Parents;
 use App\Models\Teacher;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -406,6 +408,44 @@ private function updateIndustry($user, $request)
         ]);
     }
 }
+
+public function updateStudentImage(Request $request, $id)
+{
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['error' => 'User tidak ditemukan.'], 404);
+    }
+
+    // Validasi file image
+    $validator = Validator::make($request->all(), [
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    $student = $user->students()->first();
+
+    if (!$student) {
+        return response()->json(['error' => 'Siswa tidak ditemukan.'], 404);
+    }
+
+    // Hapus image lama jika ada
+    if ($request->hasFile('image')) {
+        if ($student->image) {
+            Storage::disk('public')->delete($student->image);
+        }
+        $student->image = $request->file('image')->store('students', 'public');
+        Log::info('Gambar yang diunggah:', ['path' => $student->image]);
+    }
+    $student->save();
+  
+
+    return response()->json(['success' => true, 'message' => 'Foto berhasil diperbarui!', 'data' => $student], 200);
+}
+
 
 
 }
