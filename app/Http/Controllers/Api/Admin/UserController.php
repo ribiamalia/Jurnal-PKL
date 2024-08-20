@@ -19,7 +19,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('students')
+        $users = User::with('students.classes','students.departements','students.parents','students.teachers','students.industries', 'parents', 'teachers', 'industries')
             ->when(request()->search, function($query) {
                 return $query->where('name', 'like', '%' . request()->search . '%');
             })
@@ -252,7 +252,7 @@ class UserController extends Controller
 public function show($id)
 {
     // Temukan user berdasarkan ID
-    $user = User::with(['roles', 'students', 'teachers', 'parents', 'industries'])->find($id);
+    $user = User::with(['roles', 'students.classes','students.departements','students.parents','students.teachers','students.industries', 'teachers', 'parents', 'industries'])->find($id);
 
     if ($user) {
         $userData = [

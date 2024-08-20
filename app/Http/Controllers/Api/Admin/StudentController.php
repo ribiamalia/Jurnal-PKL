@@ -161,7 +161,8 @@ class StudentController extends Controller
 
     public function show($id)
     {
-        $student = Student::find($id);
+        $student = Student::with('parents', 'industries', 'departements', 'teachers', 'classes')
+        ->find($id);
 
         if($student) {
             //return succes with Api Resource
