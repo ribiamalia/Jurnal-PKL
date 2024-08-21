@@ -19,7 +19,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('students.classes','students.departements','students.parents','students.teachers','students.industries', 'parents.students', 'teachers.students', 'industries.students')
+        $users = User::with('students.classes','students.departements','students.parents','students.teachers','students.industries', 'parents', 'teachers', 'industries')
             ->when(request()->search, function($query) {
                 return $query->where('name', 'like', '%' . request()->search . '%');
             })
@@ -252,7 +252,7 @@ class UserController extends Controller
 public function show($id)
 {
     // Temukan user berdasarkan ID
-    $user = User::with(['roles', 'students.classes','students.departements','students.parents','students.teachers','students.industries.students', 'teachers.students', 'parents.students', 'industries.students'])->find($id);
+    $user = User::with(['roles', 'students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries'])->find($id);
 
     if ($user) {
         $userData = [
@@ -444,43 +444,6 @@ public function updateStudentImage(Request $request, $id)
   
 
     return response()->json(['success' => true, 'message' => 'Foto berhasil diperbarui!', 'data' => $student], 200);
-}
-
-public function indexbyrole(Request $request)
-{
-    $role = $request->input('role');
-
-    $query = User::query();
-
-    // Filter berdasarkan peran jika diberikan
-    if ($role) {
-        $query->role($role);
-    }
-
-    // Lakukan eager loading relasi-relasi yang diperlukan
-    $query->with([
-        'students.classes',
-        'students.departements',
-        'students.parents',
-        'students.teachers',
-        'students.industries',
-        'parents.students',
-        'teachers.students',
-        'industries.students'
-    ]);
-
-    // Tambahkan pencarian jika ada
-    if ($request->has('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
-    }
-
-    // Urutkan data berdasarkan waktu pembuatan terbaru dan paginasi hasilnya
-    $users = $query->latest()->paginate(10);
-
-    // Tambahkan parameter pencarian ke dalam paginasi
-    $users->appends(['search' => $request->search]);
-
-    return new UserResource(true, 'List Data User', $users);
 }
 
 
