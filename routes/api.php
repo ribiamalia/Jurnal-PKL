@@ -75,6 +75,8 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('/absence', \App\Http\Controllers\Api\Admin\AttendanceController::class);
         Route::get('/parent/absence', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
         Route::get('/parentabsence/{parentId}', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
+
+        Route::apiResource('/jurnal', \App\Http\Controllers\Api\Admin\ActivityController::class);
     });
 
 });
