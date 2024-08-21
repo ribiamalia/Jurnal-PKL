@@ -19,11 +19,17 @@ class ActivityController extends Controller
         'end_time' => 'required',
         'description' => 'required',
         'tools' => 'required',
+        'judul' => 'required',
         ]);
 
         if($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 422);
         };
+
+        $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('activities', 'public');
+    }
 
         $activity = Activity::create([
             'user_id'       => auth()->guard('api')->user()->id,
@@ -32,6 +38,8 @@ class ActivityController extends Controller
         'end_time' => $request->end_time,
         'description' => $request->description,
         'tools' => $request->tools,
+        'judul' => $request->judul,
+        'image' => $imagePath,
         ]);
 
         if($activity) {
@@ -51,22 +59,27 @@ class ActivityController extends Controller
         'end_time' => 'required',
         'description' => 'required',
         'tools' => 'required',
+        'judul' => 'required',
         ]);
 
         if($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 422);
         };
 
-        $activity = Activity::create([
+        $activity = Activity::find($id);
+
+        if($activity) {
+            $activity->update([
             'user_id'       => auth()->guard('api')->user()->id,
         'date' => $request->date,
         'start_time' => $request->start_time,
         'end_time' => $request->end_time,
         'description' => $request->description,
         'tools' => $request->tools,
+        'judul' => $request->judul,
         ]);
 
-        if($activity) {
+
             return new ActivityResource(true, 'Daily Activity berhasil disimpan', $activity);
         }
 
