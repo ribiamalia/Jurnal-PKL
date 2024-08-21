@@ -19,7 +19,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('students.classes','students.departements','students.parents','students.teachers','students.industries', 'parents', 'teachers', 'industries')
+        $users = User::with('students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries')
             ->when(request()->search, function($query) {
                 return $query->where('name', 'like', '%' . request()->search . '%');
             })
