@@ -20,7 +20,6 @@ class AttendanceController extends Controller
     $validator = Validator::make($request->all(), [
         'date' => 'required|date',
         'departureTime' => 'required',
-        'arrivalTime' => 'required',
         'absenceReason' => 'required',
         'image' => 'required|image',
         'longitude' => 'required|numeric',
@@ -41,34 +40,18 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Student data not found'], 404);
     }
 
-    // Ambil industri terkait dari student
-    $industry = Industry::find($student->industri_id);
-
-    if (!$industry) {
-        return response()->json(['error' => 'Industry data not found'], 404);
-    }
-
-    // Hitung jarak antara lokasi absensi dan lokasi industri
-    $distance = $this->calculateDistance(
-        $request->latitude,
-        $request->longitude,
-        $industry->latitude,
-        $industry->longitude
-    );
-
-    // Periksa apakah jarak dalam radius 300 meter
-    if ($distance > 0.3) {
-        return response()->json(['error' => 'Lokasi absensi di luar radius yang diizinkan'], 403);
-    }
-
+    
     // Simpan absensi
     $attendance = Attendance::create([
         'date' => $request->date,
         'departureTime' => $request->departureTime,
-        'arrivalTime' => $request->arrivalTime,
         'absenceReason' => $request->absenceReason,
         'image' => $image,
         'user_id' => auth()->guard('api')->user()->id,
+        'longitude' => $request->longitude,
+        'latitude' => $request->latitude
+        ,
+
     ]);
 
     if ($attendance) {
@@ -78,23 +61,6 @@ class AttendanceController extends Controller
     return new AttendanceResource(false, 'Absen gagal disimpan', null);
 }
 
-private function calculateDistance($lat1, $lon1, $lat2, $lon2)
-{
-    $earthRadius = 6371; // Radius bumi dalam kilometer
-
-    $dLat = deg2rad($lat2 - $lat1);
-    $dLon = deg2rad($lon2 - $lon1);
-
-    $a = sin($dLat / 2) * sin($dLat / 2) +
-         cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-         sin($dLon / 2) * sin($dLon / 2);
-
-    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
-    $distance = $earthRadius * $c; // Jarak dalam kilometer
-
-    return $distance; // Dalam kilometer
-}
 
 
     public function update(Request $request, $id) {
@@ -103,6 +69,9 @@ private function calculateDistance($lat1, $lon1, $lat2, $lon2)
             'departureTime' => 'require',
             'arrivalTime' => 'require',
             'absenceReason' => 'require',
+            'longitude' => 'required|numeric',
+            'latitude' => 'required|numeric',
+            
         ]);
 
         if($validator->fails()) {
