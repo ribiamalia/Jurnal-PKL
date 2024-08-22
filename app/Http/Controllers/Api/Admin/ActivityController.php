@@ -86,4 +86,42 @@ class ActivityController extends Controller
         return new ActivityResource(false, 'Daily Activity gagal disimpan', null);
 
     }
+
+    public function destroy($id)
+    {
+        $activity = Activity::find($id);
+        if($activity) {
+            $activity->delete();
+            return new ActivityResource(true, 'Daily Activity berhasil di hapus', null);
+        }
+        return new ActivityResource(false, 'Daily Activity gagal di hapus', null);
+    }
+
+    public function index()
+    {
+        // Mendapatkan daftar academic programs dari database
+        $activity = Activity::when(request()->search, function($query) {
+            // Jika ada parameter pencarian (search) di URL
+            // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
+            $query->where('name', 'like', '%' . request()->search . '%');
+        })->with('users')->latest() // Mengurutkan academic programs dari yang terbaru
+        ->paginate(15); // Membuat paginasi dengan 5 item per halaman
+
+        // Menambahkan parameter pencarian ke URL pada hasil paginasi
+        $activity->appends(['search' => request()->search]);
+
+        // Mengembalikan response dalam bentuk DepartemenResource (asumsi resource sudah didefinisikan)
+        return new ActivityResource(true, 'List Data Jurnal', $activity);
+    }
+
+    public function show($id)
+    {
+        $activity = Activity::with('users')->find($id);
+
+        if ($activity) {
+            return new ActivityResource(true, 'Detail of Daily Activity', $activity);
+        }
+
+        return new ActivityResource(false, 'Daily Activity not found', null);
+    }
 }
