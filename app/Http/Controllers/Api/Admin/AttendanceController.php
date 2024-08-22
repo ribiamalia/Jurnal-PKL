@@ -16,86 +16,80 @@ use App\Http\Resources\AttendanceResource;
 class AttendanceController extends Controller
 {
     public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'date' => 'required|date',
-        'departureTime' => 'required',
-        'absenceReason' => 'required',
-        'image' => 'required|image',
-        'longitude' => 'required|numeric',
-        'latitude' => 'required|numeric',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json($validator->errors(), 422);
-    }
-
-    // Simpan gambar
-    $image = $request->file('image')->store('attendances', 'public');
-
-    // Ambil student terkait dari user yang sedang login
-    $student = Student::where('user_id', auth()->guard('api')->user()->id)->first();
-
-    if (!$student) {
-        return response()->json(['error' => 'Student data not found'], 404);
-    }
-
+    {
+        $validator = Validator::make($request->all(), [
+            'absenceReason' => 'required',
+            'image' => 'required|image',
+            'longitude' => 'required|numeric',
+            'latitude' => 'required|numeric',
+        ]);
     
-    // Simpan absensi
-    $attendance = Attendance::create([
-        'date' => $request->date,
-        'departureTime' => $request->departureTime,
-        'absenceReason' => $request->absenceReason,
-        'image' => $image,
-        'user_id' => auth()->guard('api')->user()->id,
-        'longitude' => $request->longitude,
-        'latitude' => $request->latitude
-        ,
-
-    ]);
-
-    if ($attendance) {
-        return new AttendanceResource(true, 'Absen berhasil disimpan', $attendance);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+    
+        // Simpan gambar
+        $image = $request->file('image')->store('attendances', 'public');
+    
+        // Ambil student terkait dari user yang sedang login
+        $student = Student::where('user_id', auth()->guard('api')->user()->id)->first();
+    
+        if (!$student) {
+            return response()->json(['error' => 'Student data not found'], 404);
+        }
+    
+        // Ambil waktu saat ini
+        $currentDate = now()->toDateString(); // Tanggal hari ini
+        $currentTime = now()->toTimeString(); // Waktu saat ini
+    
+        // Simpan absensi masuk
+        $attendance = Attendance::create([
+            'date' => $currentDate,
+            'departureTime' => $currentTime,
+            'absenceReason' => $request->absenceReason,
+            'image' => $image,
+            'user_id' => auth()->guard('api')->user()->id,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
+        ]);
+    
+        if ($attendance) {
+            return new AttendanceResource(true, 'Absen masuk berhasil disimpan', $attendance);
+        }
+    
+        return new AttendanceResource(false, 'Absen masuk gagal disimpan', null);
     }
-
-    return new AttendanceResource(false, 'Absen gagal disimpan', null);
-}
-
+    
 
 
     public function update(Request $request, $id) {
         $validator = Validator::make($request->all(), [
-            'date' => 'require|date',
-            'departureTime' => 'require',
-            'arrivalTime' => 'require',
-            'absenceReason' => 'require',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
-            
+            'arrivalTime' => 'required',
+            'reason_2' => 'nullable',
+            'longitude_2' => 'required|numeric',
+            'latitude_2' => 'required|numeric',
         ]);
-
+    
         if($validator->fails()) {
             return response()->json(['error' => $validator->errors()->first()], 422);
         }
-
+    
         $attendance = Attendance::find($id);
-
+    
         if($attendance) {
             $attendance->update([
-                'date' => $request->date,
-            'departureTime' => $request->departureTime,
-            'arrivalTime' => $request->arrivalTime,
-            'absenceReason' => $request->absenceReason,
-            'user_id'       => auth()->guard('api')->user()->id,
-
+                'arrivalTime' => now()->toTimeString(),  // Waktu kepulangan
+                'reason_2' => $request->reason_2,
+                'longitude_2' => $request->longitude_2,
+                'latitude_2' => $request->latitude_2,
             ]);
-
-            return new AttendanceResource(true, 'Absen berhasil disimpan', $attendance);
+    
+            return new AttendanceResource(true, 'Absen pulang berhasil disimpan', $attendance);
         }
-
+    
         return new AttendanceResource(false, 'Absen gagal disimpan', null);
     }
-
+    
     
 
     public function index()

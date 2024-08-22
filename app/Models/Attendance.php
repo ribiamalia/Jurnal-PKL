@@ -18,7 +18,11 @@ class Attendance extends Model
             'absenceReason',
             'image',
             'longitude',
-            'latitude'
+            'latitude',
+            'reason_2',
+            'image_2',
+            'longitude_2',
+            'latitude_2'
     ];
 
     public function users()
