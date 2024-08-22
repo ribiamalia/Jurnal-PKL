@@ -62,9 +62,8 @@ class AttendanceController extends Controller
     
 
 
-    public function update(Request $request, $id) {
+    public function update(Request $request) {
         $validator = Validator::make($request->all(), [
-            'arrivalTime' => 'required',
             'reason_2' => 'nullable',
             'longitude_2' => 'required|numeric',
             'latitude_2' => 'required|numeric',
@@ -74,11 +73,24 @@ class AttendanceController extends Controller
             return response()->json(['error' => $validator->errors()->first()], 422);
         }
     
-        $attendance = Attendance::find($id);
+        // Ambil student terkait dari user yang sedang login
+        $student = Student::where('user_id', auth()->guard('api')->user()->id)->first();
+    
+        if (!$student) {
+            return response()->json(['error' => 'Student data not found'], 404);
+        }
+    
+        // Cari absensi berdasarkan user_id dan tanggal hari ini
+        $currentDate = now()->toDateString();
+        $attendance = Attendance::where('user_id', auth()->guard('api')->user()->id)
+                                ->where('date', $currentDate)
+                                ->first();
     
         if($attendance) {
+            $currentTime = now()->toTimeString(); // Waktu saat ini
+    
             $attendance->update([
-                'arrivalTime' => now()->toTimeString(),  // Waktu kepulangan
+                'arrivalTime' => $currentTime,
                 'reason_2' => $request->reason_2,
                 'longitude_2' => $request->longitude_2,
                 'latitude_2' => $request->latitude_2,
@@ -87,8 +99,9 @@ class AttendanceController extends Controller
             return new AttendanceResource(true, 'Absen pulang berhasil disimpan', $attendance);
         }
     
-        return new AttendanceResource(false, 'Absen gagal disimpan', null);
+        return new AttendanceResource(false, 'Absen tidak ditemukan atau gagal diperbarui', null);
     }
+    
     
     
 
