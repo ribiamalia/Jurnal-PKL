@@ -116,7 +116,7 @@ class ActivityController extends Controller
 
     public function show($id)
     {
-        $activity = Activity::with('users')->find($id);
+        $activity = Activity::with('users.student.teachers', 'users.student.classes', 'users.student.industries', 'users.student.departements')->find($id);
 
         if ($activity) {
             return new ActivityResource(true, 'Detail of Daily Activity', $activity);
