@@ -73,6 +73,8 @@ Route::prefix('admin')->group(function () {
         Route::post('/userImage/{id}', [\App\Http\Controllers\Api\Admin\StudentController::class, 'updateDokumen']);
 
         Route::apiResource('/absence', \App\Http\Controllers\Api\Admin\AttendanceController::class);
+
+        Route::post('/absence/update', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'update']);
         Route::get('/parent/absence', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
         Route::get('/parentabsence/{parentId}', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
 

@@ -20,8 +20,8 @@ class AttendanceController extends Controller
         $validator = Validator::make($request->all(), [
             'absenceReason' => 'required',
             'image' => 'required|image',
-            'longitude' => 'required|numeric',
-            'latitude' => 'required|numeric',
+            'longitude' => 'required|',
+            'latitude' => 'required|',
         ]);
     
         if ($validator->fails()) {
@@ -65,8 +65,8 @@ class AttendanceController extends Controller
     public function update(Request $request) {
         $validator = Validator::make($request->all(), [
             'reason_2' => 'nullable',
-            'longitude_2' => 'required|numeric',
-            'latitude_2' => 'required|numeric',
+            'longitude_2' => 'required',
+            'lotitude_2' => 'required',
         ]);
     
         if($validator->fails()) {
@@ -93,7 +93,7 @@ class AttendanceController extends Controller
                 'arrivalTime' => $currentTime,
                 'reason_2' => $request->reason_2,
                 'longitude_2' => $request->longitude_2,
-                'latitude_2' => $request->latitude_2,
+                'lotitude_2' => $request->lotitude_2,
             ]);
     
             return new AttendanceResource(true, 'Absen pulang berhasil disimpan', $attendance);

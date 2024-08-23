@@ -22,7 +22,7 @@ class Attendance extends Model
             'reason_2',
             'image_2',
             'longitude_2',
-            'latitude_2'
+            'lotitude_2'
     ];
 
     public function users()
