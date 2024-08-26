@@ -94,7 +94,7 @@ class GuideController extends Controller
             // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
             $query->where('name', 'like', '%' . request()->search . '%');
         })->with('user')->oldest() // Mengurutkan academic programs dari yang terbaru
-        ->paginate(5); // Membuat paginasi dengan 5 item per halaman
+        ->paginate(10); // Membuat paginasi dengan 5 item per halaman
 
         // Menambahkan parameter pencarian ke URL pada hasil paginasi
         $guide->appends(['search' => request()->search]);

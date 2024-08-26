@@ -19,7 +19,7 @@ class ActivityController extends Controller
         'end_time' => 'required',
         'description' => 'required',
         'tools' => 'required',
-        'judul' => 'required',
+      
         ]);
 
         if($validator->fails()) {
@@ -38,7 +38,7 @@ class ActivityController extends Controller
         'end_time' => $request->end_time,
         'description' => $request->description,
         'tools' => $request->tools,
-        'judul' => $request->judul,
+    
         'image' => $imagePath,
         ]);
 
@@ -59,7 +59,7 @@ class ActivityController extends Controller
         'end_time' => 'required',
         'description' => 'required',
         'tools' => 'required',
-        'judul' => 'required',
+    
         ]);
 
         if($validator->fails()) {
@@ -76,7 +76,7 @@ class ActivityController extends Controller
         'end_time' => $request->end_time,
         'description' => $request->description,
         'tools' => $request->tools,
-        'judul' => $request->judul,
+     
         ]);
 
 

@@ -81,6 +81,13 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('/jurnal', \App\Http\Controllers\Api\Admin\ActivityController::class);
         Route::apiResource('/penilaian', \App\Http\Controllers\Api\Admin\EvaluationController::class);
         Route::apiResource('/panduan', \App\Http\Controllers\Api\Admin\GuideController::class);
+
+      
+
+        Route::get('/byrole', [\App\Http\Controllers\Api\Admin\EvaluationController::class, 'IndexRole']);
+        Route::get('/UserIndexbyrole', [\App\Http\Controllers\Api\Admin\UserController::class, 'indexbyRole']);
+        Route::get('/attendance/role', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'indexrole']);
+
     });
 
 });

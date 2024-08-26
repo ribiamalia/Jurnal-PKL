@@ -446,6 +446,51 @@ public function updateStudentImage(Request $request, $id)
     return response()->json(['success' => true, 'message' => 'Foto berhasil diperbarui!', 'data' => $student], 200);
 }
 
+public function indexbyRole(Request $request)
+{
+    // Ambil user yang sedang login
+    $user = auth()->guard('api')->user();
 
+    // Pastikan user terautentikasi
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not authenticated'
+        ], 401);
+    }
 
+    // Inisialisasi variabel untuk menampung user terkait
+    $relatedUsers = [];
+
+    // Cek peran pengguna
+    if ($user->hasRole('industri')) {
+        // Jika pengguna adalah industri, ambil siswa yang terkait dengan industri tersebut
+        $industry = $user->industries; // Asumsikan relasi hasOne dengan industri
+        if ($industry) {
+            $relatedUsers = User::whereHas('students', function ($query) use ($industry) {
+                $query->where('industri_id', $industry->id);
+            })->get()->toArray();
+        }
+    } elseif ($user->hasRole('orang tua')) {
+        // Jika pengguna adalah orang tua, ambil anak-anak mereka
+        $students = $user->parents->students;
+        foreach ($students as $student) {
+            $relatedUsers[] = $student->user->toArray(); // Asumsikan setiap siswa terkait dengan pengguna (user)
+        }
+    } elseif ($user->hasRole('guru')) {
+        // Jika pengguna adalah guru, ambil siswa yang diajar oleh mereka
+        $students = $user->teachers->students;
+        foreach ($students as $student) {
+            $relatedUsers[] = $student->user->toArray(); // Asumsikan setiap siswa terkait dengan pengguna (user)
+        }
+    } else {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    // Return response dengan resource collection
+    return response()->json($relatedUsers);
+}
 }

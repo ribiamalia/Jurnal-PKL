@@ -12,7 +12,6 @@ class Activity extends Model
 
     protected $fillable = [
     'user_id',
-    'judul',
      'date',
      'start_time',
         'end_time',
