@@ -52,11 +52,9 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('/roles', \App\Http\Controllers\Api\Admin\RoleController::class)
         ->middleware('permission:roles.index|roles.store|roles.update|roles.delete');
 
-        Route::apiResource('/departemen', \App\Http\Controllers\Api\Admin\DepartemenController::class)
-        ->middleware('permission:jurusan.index|jurusan.store|jurusan.update|jurusan.delete');
+        Route::apiResource('/departemen', \App\Http\Controllers\Api\Admin\DepartemenController::class);
 
-        Route::apiResource('/classes', \App\Http\Controllers\Api\Admin\ClassesController::class)
-        ->middleware('permission:kelas.index|kelas.store|kelas.update|kelas.delete');
+        Route::apiResource('/classes', \App\Http\Controllers\Api\Admin\ClassesController::class);
 
         Route::apiResource('/teacher', \App\Http\Controllers\Api\Admin\TeacherController::class);
         

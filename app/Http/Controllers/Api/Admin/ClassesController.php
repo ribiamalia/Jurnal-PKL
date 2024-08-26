@@ -45,7 +45,7 @@ class ClassesController extends Controller
             $query->where('name', 'like', '%' . request()->search . '%');
         })
         ->with('departemens') // Mengambil relasi academicprogram // Menghitung jumlah siswa untuk setiap kelas
-        ->withCount('users')
+        ->withCount('students')
         ->oldest() // Mengurutkan classrooms dari yang terbaru
         ->paginate(10); // Membuat paginasi dengan 5 item per halaman
     

@@ -20,7 +20,7 @@ class Student extends Model
             'bloodType',
             'alamat',
             'image',
-            'class_id',
+            'classes_id',
             'industri_id',
             'departemen_id',
             'parents_id',
@@ -28,7 +28,7 @@ class Student extends Model
            ];
 
            public function classes (){
-            return $this->belongsTo(Classes::class, 'class_id');
+            return $this->belongsTo(Classes::class, 'classes_id');
         }
         public function parents()
         {
