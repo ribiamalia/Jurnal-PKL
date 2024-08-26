@@ -117,7 +117,7 @@ class ActivityController extends Controller
                 $query->where('class_id', request()->class_id);
             });
         })
-        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents') // Mengambil relasi yang diperlukan
+        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
         ->latest() // Mengurutkan activity dari yang terbaru
         ->paginate(15); // Membuat paginasi dengan 15 item per halaman
     
@@ -135,7 +135,7 @@ class ActivityController extends Controller
 
     public function show($id)
     {
-        $activity = Activity::with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents')->find($id);
+        $activity = Activity::with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries')->find($id);
 
         if ($activity) {
             return new ActivityResource(true, 'Detail of Daily Activity', $activity);
