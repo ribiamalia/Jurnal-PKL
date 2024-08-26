@@ -99,7 +99,7 @@ class ActivityController extends Controller
 
     public function index()
     {
-        // Mendapatkan daftar activity dari database dengan filter berdasarkan departemen_id dan class_id
+        // Mendapatkan daftar activity dari database dengan filter berdasarkan departemen_id dan classes_id
         $activity = Activity::when(request()->search, function($query) {
             // Jika ada parameter pencarian (search) di URL
             // Maka tambahkan kondisi WHERE untuk mencari activity berdasarkan deskripsi
@@ -111,10 +111,10 @@ class ActivityController extends Controller
                 $query->where('departemen_id', request()->departemen_id);
             });
         })
-        ->when(request()->class_id, function($query) {
-            // Jika ada parameter class_id di URL
+        ->when(request()->classes_id, function($query) {
+            // Jika ada parameter classes_id di URL
             $query->whereHas('users.students', function($query) {
-                $query->where('class_id', request()->class_id);
+                $query->where('classes_id', request()->classes_id);
             });
         })
         ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
@@ -125,7 +125,7 @@ class ActivityController extends Controller
         $activity->appends([
             'search' => request()->search,
             'departemen_id' => request()->departemen_id,
-            'class_id' => request()->class_id
+            'classes_id' => request()->classes_id
         ]);
     
         // Mengembalikan response dalam bentuk ActivityResource
