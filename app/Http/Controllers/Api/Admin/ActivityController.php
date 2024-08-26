@@ -99,20 +99,39 @@ class ActivityController extends Controller
 
     public function index()
     {
-        // Mendapatkan daftar academic programs dari database
+        // Mendapatkan daftar activity dari database dengan filter berdasarkan departemen_id dan class_id
         $activity = Activity::when(request()->search, function($query) {
             // Jika ada parameter pencarian (search) di URL
-            // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
-            $query->where('name', 'like', '%' . request()->search . '%');
-        })->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents')->latest() // Mengurutkan academic programs dari yang terbaru
-        ->paginate(15); // Membuat paginasi dengan 5 item per halaman
-
+            // Maka tambahkan kondisi WHERE untuk mencari activity berdasarkan deskripsi
+            $query->where('description', 'like', '%' . request()->search . '%');
+        })
+        ->when(request()->departemen_id, function($query) {
+            // Jika ada parameter departemen_id di URL
+            $query->whereHas('users.students', function($query) {
+                $query->where('departemen_id', request()->departemen_id);
+            });
+        })
+        ->when(request()->class_id, function($query) {
+            // Jika ada parameter class_id di URL
+            $query->whereHas('users.students', function($query) {
+                $query->where('class_id', request()->class_id);
+            });
+        })
+        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents') // Mengambil relasi yang diperlukan
+        ->latest() // Mengurutkan activity dari yang terbaru
+        ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+    
         // Menambahkan parameter pencarian ke URL pada hasil paginasi
-        $activity->appends(['search' => request()->search]);
-
-        // Mengembalikan response dalam bentuk DepartemenResource (asumsi resource sudah didefinisikan)
-        return new ActivityResource(true, 'List Data Jurnal', $activity);
+        $activity->appends([
+            'search' => request()->search,
+            'departemen_id' => request()->departemen_id,
+            'class_id' => request()->class_id
+        ]);
+    
+        // Mengembalikan response dalam bentuk ActivityResource
+        return new ActivityResource(true, 'List Data Activity', $activity);
     }
+    
 
     public function show($id)
     {
