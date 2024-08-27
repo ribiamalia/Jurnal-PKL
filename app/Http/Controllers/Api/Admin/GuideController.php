@@ -15,7 +15,6 @@ class GuideController extends Controller
 {
     public function store(Request $request){
         $validator = Validator::make($request->all(), [
-            'user_id'   => 'required|exists:users,id',
             'dokumen'   => 'required|file|mimes:pdf,jpg,jpeg,png',
         ]);
 
@@ -93,8 +92,8 @@ class GuideController extends Controller
             // Jika ada parameter pencarian (search) di URL
             // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
             $query->where('name', 'like', '%' . request()->search . '%');
-        })->with('user')->oldest() // Mengurutkan academic programs dari yang terbaru
-        ->paginate(10); // Membuat paginasi dengan 5 item per halaman
+        })->with('users')->oldest() // Mengurutkan academic programs dari yang terbaru
+        ->paginate(1); // Membuat paginasi dengan 5 item per halaman
 
         // Menambahkan parameter pencarian ke URL pada hasil paginasi
         $guide->appends(['search' => request()->search]);
