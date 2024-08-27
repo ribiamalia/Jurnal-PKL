@@ -44,9 +44,10 @@ class LoginController extends Controller
             'user'          => [
                 'id'            => $user->id,
                 'name'          => $user->name,
-                'industri_id'   => optional($user->student)->industri_id, // Alternatif untuk menangani null dengan lebih ringkas
+                'industri_id'   => optional($user->student)->industri_id, 
+                'roles'         => $user->roles->pluck('name')->implode(','),// Alternatif untuk menangani null dengan lebih ringkas
             ],
-            'roles'         => $user->roles->pluck('name')->implode(','),
+            
             'permissions'   => $user->getAllPermissions()->pluck('name'),
             'token'         => $token
         ], 200);
