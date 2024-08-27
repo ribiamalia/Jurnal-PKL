@@ -10,6 +10,61 @@ use App\Http\Resources\ActivityResource;
 
 class ActivityController extends Controller
 {
+
+    public function indexRole()
+{
+    $user = auth()->guard('api')->user();
+
+    // Mengambil data jurnal berdasarkan peran pengguna
+    $activity = Activity::when($user->hasRole('orang_tua'), function($query) use ($user) {
+        $query->whereHas('users.students', function($query) use ($user) {
+            $query->whereHas('parents', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->when($user->hasRole('guru'), function($query) use ($user) {
+        $query->whereHas('users.students', function($query) use ($user) {
+            $query->whereHas('teachers', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->when($user->hasRole('industri'), function($query) use ($user) {
+        $query->whereHas('users.students', function($query) use ($user) {
+            $query->whereHas('industries', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+    ->latest() // Mengurutkan activity dari yang terbaru
+    ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+
+    // Mengembalikan response dalam bentuk ActivityResource
+    return new ActivityResource(true, 'List Data Activity siswa', $activity);
+}
+
+
+    public function indexStudentOnly()
+    {
+        // Mendapatkan daftar activity yang dibuat oleh user yang sedang login
+        $activity = Activity::where('user_id', auth()->guard('api')->user()->id)
+            ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+            ->latest() // Mengurutkan activity dari yang terbaru
+            ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+    
+        // Mengembalikan response dalam bentuk ActivityResource
+        if($activity) {
+        return new ActivityResource(true, 'List Data Activity', $activity);}
+
+        return new ActivityResource(false, 'Gagal ditemukan!' , null);
+
+
+    }
+    
+
+    
     
     public function store(Request $request)
     {

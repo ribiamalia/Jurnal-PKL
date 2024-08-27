@@ -77,6 +77,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/parentabsence/{parentId}', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
 
         Route::apiResource('/jurnal', \App\Http\Controllers\Api\Admin\ActivityController::class);
+        Route::get('/StudentOnly', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'indexStudentOnly']);
+        Route::get('/student-jurnal', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'indexStudentOnly' ]);
+        Route::get('/indexRole-jurnal', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'indexRole' ]);
+
+
         Route::apiResource('/penilaian', \App\Http\Controllers\Api\Admin\EvaluationController::class);
         Route::apiResource('/panduan', \App\Http\Controllers\Api\Admin\GuideController::class);
 
