@@ -141,42 +141,62 @@ class AttendanceController extends Controller
 
     public function indexRole()
 {
-    // Ambil user yang sedang login
     $user = auth()->guard('api')->user();
 
-    // Inisialisasi variabel untuk menampung user_id siswa terkait
-    $relatedUserIds = [];
+    // Menampilkan data kehadiran berdasarkan peran pengguna
+    $attendance = Attendance::when($user->hasRole('orang_tua'), function($query) use ($user) {
+        // Jika pengguna memiliki peran "orang tua"
+        $query->whereHas('users.students', function($query) use ($user) {
+            // Mengambil data siswa yang memiliki orang tua yang sesuai
+            $query->whereHas('parents', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->when($user->hasRole('guru'), function($query) use ($user) {
+        // Jika pengguna memiliki peran "guru"
+        $query->whereHas('users.students', function($query) use ($user) {
+            // Mengambil data siswa yang memiliki guru yang sesuai
+            $query->whereHas('teachers', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->when($user->hasRole('industri'), function($query) use ($user) {
+        // Jika pengguna memiliki peran "industri"
+        $query->whereHas('users.students', function($query) use ($user) {
+            // Mengambil data siswa yang memiliki industri yang sesuai
+            $query->whereHas('industries', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        });
+    })
+    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+    ->latest() // Mengurutkan attendance dari yang terbaru
+    ->paginate(15); // Membuat paginasi dengan 15 item per halaman
 
-    // Cek peran pengguna
-    if ($user->hasRole('industri')) {
-        // Jika pengguna adalah industri, ambil siswa yang terkait dengan industri tersebut
-        $industry = $user->industries; // Asumsikan relasi hasOne dengan industri
-        if ($industry) {
-            $relatedUserIds = Student::where('industri_id', $industry->id)->pluck('user_id')->toArray();
-        }
-    } elseif ($user->hasRole('orang tua')) {
-        // Jika pengguna adalah orang tua, ambil anak-anak mereka
-        $relatedUserIds = $user->parents->students->pluck('user_id')->toArray();
-    } elseif ($user->hasRole('guru')) {
-        // Jika pengguna adalah guru, ambil siswa yang diajar oleh mereka
-        $relatedUserIds = $user->teachers->students->pluck('user_id')->toArray();
-    } else {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 403);
-    }
-
-    // Dapatkan daftar kehadiran dari siswa terkait
-    $attendances = Attendance::whereIn('user_id', $relatedUserIds)->get();
-
-    // Kembalikan response dengan resource collection
-    return AttendanceResource::collection($attendances);
+    // Mengembalikan response dalam bentuk AttendanceResource
+    return new AttendanceResource(true, 'List Data Kehadiran', $attendance);
 }
 
-    
-    
+public function indexStudent()
+{
+    // Ambil user yang sedang login
+    $userId = auth()->guard('api')->user()->id;
 
+    // Mendapatkan daftar data kehadiran hanya untuk user yang sedang login
+    $attendance = Attendance::where('user_id', $userId)
+        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+        ->latest() // Mengurutkan attendance dari yang terbaru
+        ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+
+    // Mengembalikan response dalam bentuk AttendanceResource
+    return new AttendanceResource(true, 'List Data Kehadiran' , $attendance);
+}
+
+
+
+    
 }
 
 

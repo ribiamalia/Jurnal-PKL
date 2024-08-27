@@ -75,6 +75,8 @@ Route::prefix('admin')->group(function () {
         Route::post('/absence/update', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'update']);
         Route::get('/parent/absence', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
         Route::get('/parentabsence/{parentId}', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
+        Route::get('/absenSiswa', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'indexRole']);
+        Route::get('/absenSiswaOnly', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'IndexStudent']);
 
         Route::apiResource('/jurnal', \App\Http\Controllers\Api\Admin\ActivityController::class);
         Route::get('/StudentOnly', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'indexStudentOnly']);
