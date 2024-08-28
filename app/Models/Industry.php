@@ -35,4 +35,8 @@ class Industry extends Model
     {
         return $this->hasMany(Visits::class);
     }
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
 }

@@ -86,6 +86,7 @@ Route::prefix('admin')->group(function () {
 
         Route::apiResource('/penilaian', \App\Http\Controllers\Api\Admin\EvaluationController::class);
         Route::apiResource('/panduan', \App\Http\Controllers\Api\Admin\GuideController::class);
+        Route::apiResource('/jadwal', \App\Http\Controllers\Api\Admin\ScheduleController::class);
 
       
 
