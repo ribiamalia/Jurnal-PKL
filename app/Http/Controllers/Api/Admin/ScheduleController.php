@@ -68,33 +68,31 @@ class ScheduleController extends Controller
         // Ambil nama-nama user dari database
         $users = User::whereIn('id', $userIds)->pluck('name', 'id');
     
-        // Menyusun hasil jadwal yang dikelompokkan berdasarkan tanggal dan user_id
+        // Menyusun hasil jadwal yang dikelompokkan berdasarkan tanggal
         $groupedSchedules = $schedules->map(function ($dateGroup) use ($users) {
-            return $dateGroup->groupBy('user_id')->map(function ($userGroup, $userId) use ($users) {
+            return $dateGroup->map(function ($schedule) use ($users) {
                 return [
-                    'user_id' => $userId,
-                    'user_name' => $users[$userId] ?? 'Unknown', // Tambahkan nama user
-                    'schedules' => $userGroup->map(function ($schedule) {
-                        return [
-                            'id' => $schedule->id,
-                            'industri_id' => $schedule->industri_id,
-                            'date' => $schedule->date,
-                            'status' => $schedule->status,
-                            'created_at' => $schedule->created_at,
-                            'updated_at' => $schedule->updated_at
-                        ];
-                    })
+                    'id' => $schedule->id,
+                    'user_id' => $schedule->user_id,
+                    'user_name' => $users[$schedule->user_id] ?? 'Unknown', // Tambahkan nama user
+                    'industri_id' => $schedule->industri_id,
+                    'industri_name' => $schedule->industries->name,
+                    'date' => $schedule->date,
+                    'status' => $schedule->status,
+                    'created_at' => $schedule->created_at,
+                    'updated_at' => $schedule->updated_at
                 ];
-            })->values();
+            });
         });
     
         // Mengembalikan response dalam format JSON
         return response()->json([
             'success' => true,
-            'message' => 'List Schedule grouped by date and user_id',
+            'message' => 'List Schedule grouped by date',
             'data' => $groupedSchedules
         ]);
     }
+    
 
     public function show($id)
     {
