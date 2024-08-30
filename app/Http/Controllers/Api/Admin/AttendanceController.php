@@ -16,86 +16,113 @@ use App\Http\Resources\AttendanceResource;
 class AttendanceController extends Controller
 {
     public function store(Request $request)
-    {
-        // Validasi input
-        $validator = Validator::make($request->all(), [
-            'absenceReason' => 'required_if:arrivalTime,null',
-            'image' => 'required_if:arrivalTime,null|image',
-            'longitude' => 'required_if:arrivalTime,null',
-            'latitude' => 'required_if:arrivalTime,null',
-            'reason_2' => 'nullable|required_if:arrivalTime,null',
-            'longitude_2' => 'nullable|required_if:arrivalTime,null',
-            'latitude_2' => 'nullable|required_if:arrivalTime,null',
+{
+    // Validasi input
+    $validator = Validator::make($request->all(), [
+        'absenceReason' => 'required_if:arrivalTime,null',
+        'image' => 'required_if:arrivalTime,null|image',
+        'longitude' => 'required_if:arrivalTime,null',
+        'latitude' => 'required_if:arrivalTime,null',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()->first()], 422);
+    }
+
+    // Ambil student terkait dari user yang sedang login
+    $student = Student::where('user_id', auth()->guard('api')->user()->id)->first();
+    if (!$student) {
+        return response()->json(['error' => 'Student data not found'], 404);
+    }
+
+    // Ambil waktu saat ini
+    $currentDate = now()->toDateString(); // Tanggal hari ini
+    $currentTime = now()->toTimeString(); // Waktu saat ini
+
+    // Cek apakah sudah ada absensi masuk untuk hari ini
+    $attendanceCount = Attendance::where('user_id', auth()->guard('api')->user()->id)
+                            ->where('date', $currentDate)
+                            ->count();
+
+    if ($attendanceCount == 0) {
+        // Simpan absensi masuk
+        $image = $request->file('image')->store('attendances', 'public');
+
+        $attendance = Attendance::create([
+            'date' => $currentDate,
+            'departureTime' => $currentTime,
+            'absenceReason' => $request->absenceReason,
+            'image' => $image,
+            'user_id' => auth()->guard('api')->user()->id,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
+            'status' => 'Masuk',
         ]);
-    
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-    
-        // Ambil student terkait dari user yang sedang login
-        $student = Student::where('user_id', auth()->guard('api')->user()->id)->first();
-        if (!$student) {
-            return response()->json(['error' => 'Student data not found'], 404);
-        }
-    
-        // Ambil waktu saat ini
-        $currentDate = now()->toDateString(); // Tanggal hari ini
-        $currentTime = now()->toTimeString(); // Waktu saat ini
-    
-        // Cari absensi berdasarkan user_id dan tanggal hari ini
-        $attendance = Attendance::where('user_id', auth()->guard('api')->user()->id)
-                                ->where('date', $currentDate)
-                                ->first();
-    
-        if ($attendance) {
-            // Update absensi pulang
-            $attendance->update([
-                'arrivalTime' => $currentTime,
-                'reason_2' => $request->reason_2,
-                'longitude_2' => $request->longitude_2,
-                'latitude_2' => $request->latitude_2,
-            ]);
-    
-            return new AttendanceResource(true, 'Absen pulang berhasil disimpan', $attendance);
-        } else {
-            // Simpan absensi masuk
-            $image = $request->file('image')->store('attendances', 'public');
-    
-            $attendance = Attendance::create([
-                'date' => $currentDate,
-                'departureTime' => $currentTime,
-                'absenceReason' => $request->absenceReason,
-                'image' => $image,
-                'user_id' => auth()->guard('api')->user()->id,
-                'longitude' => $request->longitude,
-                'lotitude' => $request->lotitude,
-            ]);
-    
-            return new AttendanceResource(true, 'Absen masuk berhasil disimpan', $attendance);
-        }
+
+        return new AttendanceResource(true, 'Absen masuk berhasil disimpan', $attendance);
+    } elseif ($attendanceCount == 1) {
+
+        $imagePulang = $request->file('image')->store('attendances', 'public');
+        // Simpan absensi pulang
+        $attendance = Attendance::create([
+            'date' => $currentDate,
+            'departureTime' => $currentTime,
+            'absenceReason' => $request->absenceReason,
+            'longitude' => $request->longitude,
+            'latitude' => $request->latitude,
+            'user_id' => auth()->guard('api')->user()->id,
+            'status' => 'Pulang',
+            'image' => $imagePulang,
+        ]);
+
+        return new AttendanceResource(true, 'Absen pulang berhasil disimpan', $attendance);
+    } else {
+        return response()->json(['error' => 'Absen untuk hari ini sudah dilakukan dua kali'], 422);
     }
+}
+
     
     
     
     
 
-    public function index()
-    {
-        // Mendapatkan daftar academic programs dari database
-        $attendance = Attendance::when(request()->search, function($query) {
-            // Jika ada parameter pencarian (search) di URL
-            // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
-            $query->where('name', 'like', '%' . request()->search . '%');
-        })->with('users')
-        ->oldest() // Mengurutkan academic programs dari yang terbaru
-        ->paginate(5); // Membuat paginasi dengan 5 item per halaman
+public function index()
+{
+    $search = request()->search;
 
-        // Menambahkan parameter pencarian ke URL pada hasil paginasi
-        $attendance->appends(['search' => request()->search]);
+    $attendance = Attendance::when($search, function ($query) use ($search) {
+        
+        $query->whereHas('users', function ($q) use ($search) {
+            $q->where('name', 'like', '%' . $search . '%');
+        });
+    })
+    ->with('users') 
+    ->orderBy('date', 'asc') 
+    ->orderBy('departureTime', 'asc') 
+    ->get() 
+    ->groupBy(function ($item) {
+     
+        return $item->user_id . '-' . $item->date;
+    });
 
-        // Mengembalikan response dalam bentuk AttendanceResource (asumsi resource sudah didefinisikan)
-        return new AttendanceResource(true, 'List Data Kehadiran', $attendance);
-    }
+   
+    $formattedData = $attendance->map(function ($group) {
+        return [
+            'date' => $group->first()->date,
+            'user_id' => $group->first()->user_id,
+            'entries' => $group->groupBy('status')->map(function ($statusGroup) {
+                return [
+                    'status' => $statusGroup->first()->status,
+                    'entries' => $statusGroup->all(),
+                ];
+            }),
+        ];
+    });
+
+  
+    return new AttendanceResource(true, 'List Data Kehadiran', $formattedData);
+}
+
 
     public function show($id)
     {
