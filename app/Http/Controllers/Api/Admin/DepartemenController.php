@@ -57,7 +57,7 @@ class DepartemenController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:departemens,name,' . $id,
+            'name' => 'required',
         ]);
     
         if ($validator->fails()) {

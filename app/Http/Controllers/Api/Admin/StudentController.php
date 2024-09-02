@@ -146,16 +146,14 @@ class StudentController extends Controller
     {
         // Mendapatkan daftar academic programs dari database
         $student = Student::when(request()->search, function($query) {
-            // Jika ada parameter pencarian (search) di URL
-            // Maka tambahkan kondisi WHERE untuk mencari academic programs berdasarkan nama
+           
             $query->where('name', 'like', '%' . request()->search . '%');
-        })->with('users')->with('departements')->with('parents')->with('classes')->with('industries')->with('teachers')->oldest() // Mengurutkan academic programs dari yang terbaru
-        ->paginate(5); // Membuat paginasi dengan 5 item per halaman
-
-        // Menambahkan parameter pencarian ke URL pada hasil paginasi
+        })->with('users')->with('departements')->with('parents')->with('classes')->with('industries')->with('teachers')->oldest() // 
+        ->paginate(5); 
+       
         $student->appends(['search' => request()->search]);
 
-        // Mengembalikan response dalam bentuk DepartemenResource (asumsi resource sudah didefinisikan)
+        
         return new StudentResources(true, 'List Data Siswa', $student);
     }
 
@@ -165,11 +163,11 @@ class StudentController extends Controller
         ->find($id);
 
         if($student) {
-            //return succes with Api Resource
+            
             return new StudentResources(true, 'Detail Data Siswa!', $student);
         }
 
-        //return failed with Api Resource
+        
         return new StudentResources(false, 'Detail Data Jurusan Tidak Ditemukan!', null);
     }
 

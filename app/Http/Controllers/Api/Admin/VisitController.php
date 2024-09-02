@@ -25,14 +25,14 @@ class VisitController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        // Mendapatkan informasi industri
+       
         $industry = Industry::find($request->industri_id);
 
         if (!$industry) {
             return response()->json(['message' => 'Industri tidak ditemukan.'], 404);
         }
 
-        // Mendapatkan durasi magang (lama_pkl) dari industri
+       
         $duration = $industry->duration;
 
         // Mendapatkan jumlah visit yang sudah dilakukan oleh user di industri tersebut
@@ -40,12 +40,11 @@ class VisitController extends Controller
             ->where('industri_id', $request->industri_id)
             ->count();
 
-        // Mengecek apakah jumlah visit melebihi batas yang ditentukan
+      
         if (($duration <= 3 && $visitCount >= 3) || ($duration > 3 && $visitCount >= 4)) {
             return response()->json(['message' => 'Anda telah mencapai batas kunjungan untuk industri ini.'], 403);
         }
 
-        // Menyimpan gambar visit
         $imagePath = $request->file('image')->store('visit_images', 'public');
 
         // Membuat visit baru
@@ -110,10 +109,10 @@ class VisitController extends Controller
 
 public function show($id)
 {
-    // Mendapatkan visit berdasarkan id yang diberikan
+    
     $visit = Visits::with('users.students')->find($id);
 
-    // Mengecek apakah visit ditemukan
+   
     if (!$visit) {
         return response()->json(['message' => 'Kunjungan tidak ditemukan.'], 404);
     }
