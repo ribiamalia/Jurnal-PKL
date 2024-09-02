@@ -167,44 +167,64 @@ public function index()
     }
 
     public function indexRole()
-{
-    $user = auth()->guard('api')->user();
-
-    // Menampilkan data kehadiran berdasarkan peran pengguna
-    $attendance = Attendance::when($user->hasRole('orang_tua'), function($query) use ($user) {
-        // Jika pengguna memiliki peran "orang tua"
-        $query->whereHas('users.students', function($query) use ($user) {
-            // Mengambil data siswa yang memiliki orang tua yang sesuai
-            $query->whereHas('parents', function($query) use ($user) {
-                $query->where('user_id', $user->id);
+    {
+        $user = auth()->guard('api')->user();
+    
+        // Menampilkan data kehadiran berdasarkan peran pengguna
+        $attendance = Attendance::when($user->hasRole('orang tua'), function($query) use ($user) {
+            // Jika pengguna memiliki peran "orang tua"
+            $query->whereHas('users.students', function($query) use ($user) {
+                // Mengambil data siswa yang memiliki orang tua yang sesuai
+                $query->whereHas('parents', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                });
             });
-        });
-    })
-    ->when($user->hasRole('guru'), function($query) use ($user) {
-        // Jika pengguna memiliki peran "guru"
-        $query->whereHas('users.students', function($query) use ($user) {
-            // Mengambil data siswa yang memiliki guru yang sesuai
-            $query->whereHas('teachers', function($query) use ($user) {
-                $query->where('user_id', $user->id);
+        })
+        ->when($user->hasRole('guru'), function($query) use ($user) {
+            // Jika pengguna memiliki peran "guru"
+            $query->whereHas('users.students', function($query) use ($user) {
+                // Mengambil data siswa yang memiliki guru yang sesuai
+                $query->whereHas('teachers', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                });
             });
-        });
-    })
-    ->when($user->hasRole('industri'), function($query) use ($user) {
-        // Jika pengguna memiliki peran "industri"
-        $query->whereHas('users.students', function($query) use ($user) {
-            // Mengambil data siswa yang memiliki industri yang sesuai
-            $query->whereHas('industries', function($query) use ($user) {
-                $query->where('user_id', $user->id);
+        })
+        ->when($user->hasRole('industri'), function($query) use ($user) {
+            // Jika pengguna memiliki peran "industri"
+            $query->whereHas('users.students', function($query) use ($user) {
+                // Mengambil data siswa yang memiliki industri yang sesuai
+                $query->whereHas('industries', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                });
             });
+        })
+        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+        ->orderBy('date', 'asc') // Mengurutkan berdasarkan tanggal
+        ->orderBy('departureTime', 'asc') // Mengurutkan berdasarkan waktu
+        ->get() // Mengambil semua data
+        ->groupBy(function ($item) {
+            // Mengelompokkan data berdasarkan user_id dan tanggal
+            return $item->user_id . '-' . $item->date;
         });
-    })
-    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
-    ->latest() // Mengurutkan attendance dari yang terbaru
-    ->paginate(15); // Membuat paginasi dengan 15 item per halaman
-
-    // Mengembalikan response dalam bentuk AttendanceResource
-    return new AttendanceResource(true, 'List Data Kehadiran', $attendance);
-}
+    
+        // Format data untuk menampilkan data masuk dan pulang secara terstruktur
+        $formattedData = $attendance->map(function ($group) {
+            return [
+                'date' => $group->first()->date,
+                'user_id' => $group->first()->user_id,
+                'entries' => $group->groupBy('status')->map(function ($statusGroup) {
+                    return [
+                        'status' => $statusGroup->first()->status,
+                        'entries' => $statusGroup->all(),
+                    ];
+                }),
+            ];
+        });
+    
+        // Mengembalikan response dalam bentuk AttendanceResource
+        return new AttendanceResource(true, 'List Data Kehadiran', $formattedData);
+    }
+    
 
 public function indexStudent()
 {
@@ -213,12 +233,30 @@ public function indexStudent()
 
     // Mendapatkan daftar data kehadiran hanya untuk user yang sedang login
     $attendance = Attendance::where('user_id', $userId)
-        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
-        ->latest() // Mengurutkan attendance dari yang terbaru
-        ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+        ->orderBy('date', 'asc') // Mengurutkan berdasarkan tanggal
+        ->orderBy('departureTime', 'asc') // Mengurutkan berdasarkan waktu
+        ->get() // Mengambil semua data
+        ->groupBy(function ($item) {
+            // Mengelompokkan data berdasarkan user_id dan tanggal
+            return $item->user_id . '-' . $item->date;
+        });
+
+    // Format data untuk menampilkan data masuk dan pulang secara terstruktur
+    $formattedData = $attendance->map(function ($group) {
+        return [
+            'date' => $group->first()->date,
+            'user_id' => $group->first()->user_id,
+            'entries' => $group->groupBy('status')->map(function ($statusGroup) {
+                return [
+                    'status' => $statusGroup->first()->status,
+                    'entries' => $statusGroup->all(),
+                ];
+            }),
+        ];
+    });
 
     // Mengembalikan response dalam bentuk AttendanceResource
-    return new AttendanceResource(true, 'List Data Kehadiran' , $attendance);
+    return new AttendanceResource(true, 'List Data Kehadiran', $formattedData);
 }
 
 
