@@ -23,6 +23,7 @@ class AttendanceController extends Controller
         'image' => 'required_if:arrivalTime,null|image',
         'longitude' => 'required_if:arrivalTime,null',
         'latitude' => 'required_if:arrivalTime,null',
+        'description'   => 'nullable'
     ]);
 
     if ($validator->fails()) {
@@ -35,11 +36,10 @@ class AttendanceController extends Controller
         return response()->json(['error' => 'Student data not found'], 404);
     }
 
-    // Ambil waktu saat ini
+   
     $currentDate = now()->toDateString(); // Tanggal hari ini
     $currentTime = now()->toTimeString(); // Waktu saat ini
 
-    // Cek apakah sudah ada absensi masuk untuk hari ini
     $attendanceCount = Attendance::where('user_id', auth()->guard('api')->user()->id)
                             ->where('date', $currentDate)
                             ->count();

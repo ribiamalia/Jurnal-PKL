@@ -37,11 +37,10 @@ class ActivityController extends Controller
             });
         });
     })
-    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
-    ->latest() // Mengurutkan activity dari yang terbaru
-    ->paginate(15); // Membuat paginasi dengan 15 item per halaman
+    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') 
+    ->latest() 
+    ->paginate(15); 
 
-    // Mengembalikan response dalam bentuk ActivityResource
     return new ActivityResource(true, 'List Data Activity siswa', $activity);
 }
 

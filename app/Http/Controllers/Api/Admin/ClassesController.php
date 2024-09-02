@@ -40,19 +40,17 @@ class ClassesController extends Controller
     {
         // Mendapatkan daftar classrooms dari database
         $classes = Classes::when(request()->search, function ($query) {
-            // Jika ada parameter pencarian (search) di URL
-            // Maka tambahkan kondisi WHERE untuk mencari classrooms berdasarkan nama
+
             $query->where('name', 'like', '%' . request()->search . '%');
         })
-        ->with('departemens') // Mengambil relasi academicprogram // Menghitung jumlah siswa untuk setiap kelas
+        ->with('departemens')
         ->withCount('students')
-        ->oldest() // Mengurutkan classrooms dari yang terbaru
-        ->paginate(10); // Membuat paginasi dengan 5 item per halaman
+        ->oldest()
+        ->paginate(10);
     
-        // Menambahkan parameter pencarian ke URL pada hasil paginasi
+       
         $classes->appends(['search' => request()->search]);
     
-        // Mengembalikan response dalam bentuk ClassroomResource (asumsi resource sudah didefinisikan)
         return new ClassesResources(true, 'List Data kelas', $classes);
     }
 
@@ -67,7 +65,7 @@ class ClassesController extends Controller
             return response()->json(['error' => $validator->errors()->first()], 422);
         }
     
-        // Temukan dan perbarui kelas jika ditemukan
+      
         $classes = Classes::find($id);
     
         if ($classes) {
@@ -77,11 +75,11 @@ class ClassesController extends Controller
                 'departemen_id' => $request->departemen_id,
             ]);
     
-            // Return success with Api Resource
+           
             return new ClassesResources(true, 'Data Kelas Berhasil Diperbarui!', $classes);
         }
     
-        // Return failed with Api Resource
+        
         return new ClassesResources(false, 'Data Kelas Tidak Ditemukan!', null);
     }
 
