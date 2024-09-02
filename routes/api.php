@@ -59,7 +59,9 @@ Route::prefix('admin')->group(function () {
         Route::apiResource('/teacher', \App\Http\Controllers\Api\Admin\TeacherController::class);
         
         Route::apiResource('/users', \App\Http\Controllers\Api\Admin\UserController::class);
-        Route::get('/byrole', [\App\Http\Controllers\Api\Admin\UserController::class, 'indexbyrole']);
+
+        Route::get('/Studentbyrole', [\App\Http\Controllers\Api\Admin\UserController::class, 'indexbyrole']);
+
         Route::post('/UpdateStudentImage/{id}', [\App\Http\Controllers\Api\Admin\UserController::class, 'updateStudentImage']);
 
         Route::apiResource('/parent', \App\Http\Controllers\Api\Admin\ParentController::class);

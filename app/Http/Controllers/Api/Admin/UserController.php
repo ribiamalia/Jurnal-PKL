@@ -446,54 +446,33 @@ public function updateStudentImage(Request $request, $id)
     return response()->json(['success' => true, 'message' => 'Foto berhasil diperbarui!', 'data' => $student], 200);
 }
 
-public function indexbyRole(Request $request)
+public function indexbyrole()
 {
-    // Ambil user yang sedang login
-    $user = auth()->guard('api')->user();
+    $user = auth()->user();
 
-    // Pastikan user terautentikasi
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'User not authenticated'
-        ], 401);
-    }
-
-    // Inisialisasi variabel untuk menampung user terkait
-    $relatedUsers = [];
-
-    // Cek peran pengguna
-    if ($user->hasRole('industri')) {
-        // Jika pengguna adalah industri, ambil siswa yang terkait dengan industri tersebut
-        $industry = $user->industries; // Asumsikan relasi hasOne dengan industri
-        if ($industry) {
-            $relatedUsers = User::whereHas('students', function ($query) use ($industry) {
-                $query->where('industri_id', $industry->id);
-            })->get()->toArray();
-        }
-    } elseif ($user->hasRole('orang tua')) {
-        // Jika pengguna adalah orang tua, ambil anak-anak mereka
-        $students = $user->parents->students;
-        foreach ($students as $student) {
-            $relatedUsers[] = $student->user->toArray(); // Asumsikan setiap siswa terkait dengan pengguna (user)
-        }
+    // Periksa peran pengguna
+    if ($user->hasRole('orang tua')) {
+        // Jika pengguna adalah orang tua, tampilkan data siswa yang terkait dengan orang tua tersebut
+        $students = Student::with('industries', 'teachers', 'departements', 'classes', 'parents')
+            ->where('parents_id', $user->parents->id)
+            ->paginate(10);
     } elseif ($user->hasRole('guru')) {
-        // Jika pengguna adalah guru, ambil siswa yang diajar oleh mereka
-        $students = $user->teachers->students;
-        foreach ($students as $student) {
-            $relatedUsers[] = $student->user->toArray(); // Asumsikan setiap siswa terkait dengan pengguna (user)
-        }
+        // Jika pengguna adalah guru, tampilkan data siswa yang terkait dengan guru tersebut
+        $students = Student::with('industries', 'teachers', 'departements', 'classes', 'parents')
+            ->where('teacher_id', $user->teachers->id)
+            ->paginate(10);
+    } elseif ($user->hasRole('industri')) {
+        // Jika pengguna adalah industri, tampilkan data siswa yang terkait dengan industri tersebut
+        $students = Student::with('industries', 'teachers', 'departements', 'classes', 'parents')
+            ->where('industri_id', $user->industries->id)
+            ->paginate(10);
     } else {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 403);
+        // Jika pengguna tidak memiliki peran yang relevan, kembalikan data kosong
+        $students = collect([]);
     }
 
-    // Return response dengan resource collection
-    return response()->json($relatedUsers);
+    return new UserResource(true, 'List Data Siswa Terkait', $students);
 }
-
 
 
 }
