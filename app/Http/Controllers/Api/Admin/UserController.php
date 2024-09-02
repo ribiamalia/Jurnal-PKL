@@ -93,7 +93,7 @@ class UserController extends Controller
             'gender'      => $request->gender,
             'bloodType'   => $request->bloodType,
             'alamat'      => $request->alamat,
-            'class_id'    => $request->class_id,
+            'classes_id'    => $request->classes_id,
             'industri_id' => $request->industri_id,
             'departemen_id' => $request->departemen_id,
             'parents_id'  => $request->parents_id,
