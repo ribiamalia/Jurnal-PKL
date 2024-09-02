@@ -233,6 +233,7 @@ public function indexStudent()
 
     // Mendapatkan daftar data kehadiran hanya untuk user yang sedang login
     $attendance = Attendance::where('user_id', $userId)
+    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries')
         ->orderBy('date', 'asc') // Mengurutkan berdasarkan tanggal
         ->orderBy('departureTime', 'asc') // Mengurutkan berdasarkan waktu
         ->get() // Mengambil semua data
