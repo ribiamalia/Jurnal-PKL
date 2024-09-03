@@ -11,6 +11,7 @@ use App\Models\Parents;
 use App\Models\Student;
 use App\Models\Industry;
 use App\Http\Resources\AttendanceResource;
+use Carbon\Carbon;
 
 
 class AttendanceController extends Controller
@@ -37,8 +38,8 @@ class AttendanceController extends Controller
     }
 
    
-    $currentDate = now()->toDateString(); // Tanggal hari ini
-    $currentTime = now()->toTimeString(); // Waktu saat ini
+    $currentDate = Carbon::now()->toDateString(); // Tanggal hari ini
+    $currentTime = Carbon::now()->toTimeString(); // Waktu saat ini
 
     $attendanceCount = Attendance::where('user_id', auth()->guard('api')->user()->id)
                             ->where('date', $currentDate)
