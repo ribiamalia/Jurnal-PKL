@@ -12,8 +12,6 @@ class Parents extends Model
     protected $fillable = [
        'nama',
        'gender',
-       'placeOfBirth',
-        'dateOfBirth',
         'alamat',
         'occupation',
        'phoneNumber',

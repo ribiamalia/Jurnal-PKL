@@ -20,7 +20,7 @@ class UserTableSeeder extends Seeder
         //     'password' =>bcrypt('admin')
         // ]);
 
-        $role = Role::findByName('admin', 'api');
+        $role = Role::find(1);
         $permissions = Permission::all();
 
         $role->syncPermissions($permissions);

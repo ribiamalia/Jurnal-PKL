@@ -93,7 +93,7 @@ class UserController extends Controller
             'gender'      => $request->gender,
             'bloodType'   => $request->bloodType,
             'alamat'      => $request->alamat,
-            'classes_id'    => $request->classes_id,
+            'class_id'    => $request->class_id,
             'industri_id' => $request->industri_id,
             'departemen_id' => $request->departemen_id,
             'parents_id'  => $request->parents_id,
@@ -296,7 +296,7 @@ public function update(Request $request, $id)
     $validator = Validator::make($request->all(), [
         'name'      => 'required',
         'password'  => 'nullable|confirmed',
-        'roles'     => 'required'
+        'roles'     => 'required' // Pastikan roles adalah array
     ]);
 
     if ($validator->fails()) {
@@ -316,8 +316,10 @@ public function update(Request $request, $id)
     $user->syncRoles($request->roles);
 
     try {
-        // Update related data based on role
-        foreach ($request->roles as $role) {
+        // Pastikan roles adalah array sebelum foreach
+        $roles = is_array($request->roles) ? $request->roles : explode(',', $request->roles);
+
+        foreach ($roles as $role) {
             switch ($role) {
                 case 'siswa':
                     $this->updateStudent($user, $request);
@@ -353,7 +355,7 @@ private function updateStudent($user, $request)
             'gender'      => $request->gender,
             'bloodType'   => $request->bloodType,
             'alamat'      => $request->alamat,
-            'classes_id'    => $request->classes_id,
+            'classes_id'  => $request->classes_id,
             'industri_id' => $request->industri_id,
             'departemen_id' => $request->departemen_id,
             'parents_id'  => $request->parents_id,
@@ -394,7 +396,7 @@ private function updateParent($user, $request)
 
 private function updateIndustry($user, $request)
 {
-    $industry = $user->industry()->first();
+    $industry = $user->industries()->first();
 
     if ($industry) {
         $industry->update([
@@ -407,6 +409,7 @@ private function updateIndustry($user, $request)
             'industryMentorNo'   => $request->industryMentorNo,
         ]);
     }
+
 }
 
 public function updateStudentImage(Request $request, $id)
