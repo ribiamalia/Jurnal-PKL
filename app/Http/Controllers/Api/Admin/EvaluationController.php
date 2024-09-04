@@ -152,5 +152,16 @@ public function index()
     return new ActivityResource(true, 'List Penilaian', $evaluation);
 }
 
+public function destroy($id)
+{
+    // Find IdentitasSekolah by ID
+    $evaluation = Evaluation::findOrFail($id);
+
+    // Delete IdentitasSekolah
+    if($evaluation->delete()) {
+        // Return success with Api Resource
+        return new EvaluationResource(true, 'Penilaian Berhasil di Hapus!', null);
+    }
+}
 
 }

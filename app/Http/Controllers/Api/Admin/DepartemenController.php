@@ -116,4 +116,6 @@ class DepartemenController extends Controller
         return new DepartemenResources(false, 'Data Jurusan Tidak Ditemukan!', null);
     }
 
+
+
 }

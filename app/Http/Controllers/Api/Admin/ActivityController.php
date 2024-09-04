@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Activity;
 use App\Http\Resources\ActivityResource;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ActivityController extends Controller
 {
@@ -144,6 +146,8 @@ class ActivityController extends Controller
     public function destroy($id)
     {
         $activity = Activity::find($id);
+
+        Storage::disk('public')->delete('activities/' . basename($activity->image));
         if($activity) {
             $activity->delete();
             return new ActivityResource(true, 'Daily Activity berhasil di hapus', null);
@@ -197,4 +201,41 @@ class ActivityController extends Controller
 
         return new ActivityResource(false, 'Daily Activity not found', null);
     }
+
+    public function UpdateImage(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,pdf',
+           
+        ]);
+          // Temukan submission yang akan diedit
+    $activities = Activity::find($id);
+
+
+    // Jika submission tidak ditemukan, kembalikan respons gagal
+    if (!$activities) {
+        return response()->json(['success' => false, 'message' => 'Jurnal tidak ditemukan.'], 404);
+    }
+
+    if ($request->hasFile('image')) {
+        if ($activities->image) {
+            Storage::disk('public')->delete('activities/' . basename($activities->image));
+        }
+        $activities->dokumen = $request->file('image')->store('activities', 'public');
+        Log::info('Image yang diunggah:', ['path' => $activities->image]);
+    }
+    $activities->save();
+
+    Log::info('Updated dokumen:', $activities->toArray());
+
+    // Return success response
+    return response()->json(['success' => true, 'message' => 'Gambar berhasil diperbarui!', 'data' => $activities], 200);
+
+
+    }
+
+    
+
+
+
 }

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\Visits;
 use App\Models\Industry;
 use App\Models\Student;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class VisitController extends Controller
@@ -65,7 +67,6 @@ class VisitController extends Controller
         'industri_id' => 'required|exists:industries,id',
         'visitDate' => 'required|date',
         'visitReport' => 'required|string',
-        'image' => 'required|image'
     ]);
 
     if ($validator->fails()) {
@@ -133,8 +134,53 @@ public function show($id)
     ], 200);
 }
 
+public function destroy($id)
+{
+    // Find IdentitasSekolah by ID
+    $visit = Visits::findOrFail($id);
 
-  
+    Storage::disk('public')->delete('visit_images/' . basename($visit->image));
+
+    // Delete IdentitasSekolah
+    if($visit->delete()) {
+        // Return success with Api Resource
+        return new VisitResource(true, 'Laporan Kunjungan Berhasil di Hapus!', null);
+    }
+
+}
+
+public function UpdateImage(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,pdf',
+           
+        ]);
+          // Temukan submission yang akan diedit
+    $visit = Visits::find($id);
+
+    // Jika submission tidak ditemukan, kembalikan respons gagal
+    if (!$visit) {
+        return response()->json(['success' => false, 'message' => 'Kunjungan tidak ditemukan.'], 404);
+    }
+
+    if ($request->hasFile('image')) {
+        if ($visit->image) {
+            Storage::disk('public')->delete('visit_images/' . basename($visit->image));
+        }
+        $visit->image = $request->file('image')->store('visit_images', 'public');
+        Log::info('Dokumen yang diunggah:', ['path' => $visit->image]);
+    }
+    $visit->save();
+
+    Log::info('Updated image:', $visit->toArray());
+
+    // Return success response
+    return response()->json(['success' => true, 'message' => 'Dokumen berhasil diperbarui!', 'data' => $visit], 200);
+
+
+    }
+
+
 
     
 }

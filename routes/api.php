@@ -63,6 +63,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/Studentbyrole', [\App\Http\Controllers\Api\Admin\UserController::class, 'indexbyrole']);
 
         Route::post('/UpdateStudentImage/{id}', [\App\Http\Controllers\Api\Admin\UserController::class, 'updateStudentImage']);
+        Route::post('/updateImage/{id}', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'updateImage']);
+        Route::post('/updateVisitImage/{id}', [\App\Http\Controllers\Api\Admin\VisitController::class, 'updateImage']);
 
         Route::apiResource('/parent', \App\Http\Controllers\Api\Admin\ParentController::class);
 

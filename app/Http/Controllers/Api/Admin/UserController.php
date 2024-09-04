@@ -222,6 +222,7 @@ class UserController extends Controller
             switch ($role) {
                 case 'siswa':
                     // Hapus data siswa jika ada
+                    Storage::disk('public')->delete('students/' . basename('user_id',$id->image));
                     Student::where('user_id', $id)->delete();
                     break;
                 case 'guru':
@@ -438,7 +439,7 @@ public function updateStudentImage(Request $request, $id)
     // Hapus image lama jika ada
     if ($request->hasFile('image')) {
         if ($student->image) {
-            Storage::disk('public')->delete($student->image);
+            Storage::disk('public')->delete('students/' . basename($student->image));
         }
         $student->image = $request->file('image')->store('students', 'public');
         Log::info('Gambar yang diunggah:', ['path' => $student->image]);
