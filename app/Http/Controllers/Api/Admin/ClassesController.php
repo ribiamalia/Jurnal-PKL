@@ -97,6 +97,17 @@ class ClassesController extends Controller
         return new ClassesResources(false, 'Detail Data Kelas Tidak Ditemukan!', null);
     }
 
+    public function destroy($id)
+    {
+        $classes = Classes::find($id);
+
+        if($classes) {
+            $classes->delete();
+            return new ClassesResources(true, 'Kelas berhasil di hapus', null);
+        }
+        return new ClassesResources(false, 'Kelas gagal di hapus', null);
+    }
+
     
 }
     

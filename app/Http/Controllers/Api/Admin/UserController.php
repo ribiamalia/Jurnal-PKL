@@ -222,8 +222,13 @@ class UserController extends Controller
             switch ($role) {
                 case 'siswa':
                     // Hapus data siswa jika ada
-                    Storage::disk('public')->delete('students/' . basename('user_id',$id->image));
-                    Student::where('user_id', $id)->delete();
+                    $student = Student::where('user_id', $id)->first();
+                    if ($student) {
+                        if ($student->image) {
+                            Storage::disk('public')->delete('students/' . basename($student->image));
+                        }
+                        $student->delete();
+                    }
                     break;
                 case 'guru':
                     // Hapus data guru jika ada
