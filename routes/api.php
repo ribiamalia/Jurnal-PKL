@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AspekProduktifController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Models\AspekProduktif;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -103,6 +105,8 @@ Route::prefix('admin')->group(function () {
 
         Route::post('/import', [UserController::class, 'import']);
         Route::get('/export-users', [UserController::class, 'export']);
+
+        Route::apiResource('/produktif', AspekProduktifController::class);
 
 
     });

@@ -39,4 +39,12 @@ class Industry extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+
+    public function evaluations(){
+        return $this->hasMany(Evaluation::class);
+    }
+       public function produktif(){
+        return $this->hasMany(AspekProduktif::class);
+    }
+
 }

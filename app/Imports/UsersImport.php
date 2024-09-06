@@ -61,7 +61,7 @@ class UsersImport implements ToModel, WithHeadingRow
 
         $class = Classes::where('name', $row['kelas'])->first();
         $department = Departemen::where('name', $row['jurusan'])->first();
-        $parent = Parents::where('nama', $row['orang tua'])->first();
+        $parent = Parents::where('nama', $row['orang_tua'])->first();
         $teacher = Teacher::where('name', $row['guru'])->first();
         $industri = Industry::where('name', $row['industri'])->first();
 
