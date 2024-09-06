@@ -61,7 +61,7 @@ class UsersImport implements ToModel, WithHeadingRow
 
         $class = Classes::where('name', $row['kelas'])->first();
         $department = Departemen::where('name', $row['jurusan'])->first();
-        $parent = Parents::where('nama', $row['orang_tua'])->first();
+        $parent = Parents::where('nama', $row['orangtua'])->first();
         $teacher = Teacher::where('name', $row['guru'])->first();
         $industri = Industry::where('name', $row['industri'])->first();
 
@@ -107,14 +107,13 @@ class UsersImport implements ToModel, WithHeadingRow
 
     private function createTeacher($user, $row)
     {
-
         $department = Departemen::where('name', $row['jurusan'])->first();
 
         Teacher::create([
             'name'        => $row['name'],
             'user_id'     => $user->id,
             'no_hp'       => $row['no_hp'],
-             'departemen_id' => $department ? $department->id : null,
+            'departemen_id' => $department ? $department->id : null,
         ]);
     }
 
