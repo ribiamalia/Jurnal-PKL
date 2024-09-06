@@ -5,13 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Evaluation extends Model
+class AspekProduktif extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-       'student_id', 'industri_id', 'disiplinWaktu','kemampuanKerja','kualitasKerja','inisiatif','perilaku'
-
+        'student_id', 'industri_id', 'name', 'score'
     ];
 
     public function students(){
@@ -22,7 +21,6 @@ class Evaluation extends Model
         return $this->belongsTo(Industry::class, 'industri_id');
     }
 
-    
 
 
 }

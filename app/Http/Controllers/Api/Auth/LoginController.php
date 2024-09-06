@@ -43,7 +43,7 @@ class LoginController extends Controller
             'success'       => true,
             'user'          => [
                 'id'            => $user->id,
-                'name'          => $user->name,
+                'name'          =>auth()->guard('api')->user()->only(['name']),
                 'industri_id'   => optional($user->student)->industri_id, 
                 'roles'         => $user->roles->pluck('name')->implode(','),// Alternatif untuk menangani null dengan lebih ringkas
             ],

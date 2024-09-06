@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -97,6 +98,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/byrole', [\App\Http\Controllers\Api\Admin\EvaluationController::class, 'IndexRole']);
         Route::get('/UserIndexbyrole', [\App\Http\Controllers\Api\Admin\UserController::class, 'indexbyRole']);
         Route::get('/attendance/role', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'indexrole']);
+
+        Route::post('/storeStudentandParent', [UserController::class, 'storeStudentWithParent']);
+
+        Route::post('/import', [UserController::class, 'import']);
+        Route::get('/export-users', [UserController::class, 'export']);
+
 
     });
 

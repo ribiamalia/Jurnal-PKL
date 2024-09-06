@@ -18,8 +18,11 @@ class EvaluationController extends Controller
         // Validasi data request
         $validator = Validator::make($request->all(), [
             'student_id' => 'required|exists:students,id',
-            'skills' => 'required|string',
-            'score' => 'required|numeric|min:0|max:100'
+            'disiplinWaktu' => 'required|numeric|min:0|max:100',
+            'kemampuanKerja' => 'required|numeric|min:0|max:100',
+            'kualitasKerja' => 'required|numeric|min:0|max:100',
+            'inisiatif' => 'required|numeric|min:0|max:100',
+            'perilaku' => 'required|numeric|min:0|max:100'
         ]);
 
         if ($validator->fails()) {
@@ -54,8 +57,11 @@ class EvaluationController extends Controller
         $evaluation = Evaluation::create([
             'student_id' => $request->student_id,
             'industri_id' => $industry->id,
-            'skills' => $request->skills,
-            'score' => $request->score,
+            'disiplinWaktu' => $request->disiplinWaktu,
+            'kemampuanKerja' => $request->kemampuanKerja,
+            'kualitasKerja' => $request->kualitasKerja,
+            'inisiatif' => $request->inisiatif,
+            'perilaku' => $request->perilaku,
         ]);
 
         if ($evaluation) {
@@ -70,8 +76,11 @@ class EvaluationController extends Controller
     // Validasi data request
     $validator = Validator::make($request->all(), [
         'student_id' => 'required|exists:students,id',
-        'skills' => 'required|string',
-        'score' => 'required|numeric|min:0|max:100'
+        'disiplinWaktu' => 'required|numeric|min:0|max:100',
+        'kemampuanKerja' => 'required|numeric|min:0|max:100',
+        'kualitasKerja' => 'required|numeric|min:0|max:100',
+        'inisiatif' => 'required|numeric|min:0|max:100',
+        'perilaku' => 'required|numeric|min:0|max:100'
     ]);
 
     if ($validator->fails()) {
@@ -115,8 +124,11 @@ class EvaluationController extends Controller
     // Update data evaluasi
     $evaluation->update([
         'student_id' => $request->student_id,
-        'skills' => $request->skills,
-        'score' => $request->score,
+        'disiplinWaktu' => $request->disiplinWaktu,
+        'kemampuanKerja' => $request->kemampuanKerja,
+        'kualitasKerja' => $request->kualitasKerja,
+        'inisiatif' => $request->inisiatif,
+        'perilaku' => $request->perilaku,
     ]);
 
     return new ActivityResource(true, 'Penilaian berhasil diperbarui', $evaluation);

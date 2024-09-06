@@ -46,6 +46,12 @@ class Student extends Model
            public function users (){
             return $this->belongsTo(User::class, 'user_id');
         }
+           public function evaluations (){
+            return $this->hasMany(Evaluation::class);
+        }
+           public function produktif (){
+            return $this->hasMany(AspekProduktif::class);
+        }
 
         protected function image(): Attribute
      {
