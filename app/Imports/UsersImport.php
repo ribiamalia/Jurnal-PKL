@@ -14,6 +14,7 @@ use Illuminate\Validation\Validator;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use PhpOffice\PhpSpreadsheet\Shared\Date as PhpDate;
+use Illuminate\Support\Str;
 
 class UsersImport implements ToModel, WithHeadingRow
 {
@@ -150,6 +151,7 @@ class UsersImport implements ToModel, WithHeadingRow
         Departemen::create([
             'user_id'     => $user->id,
             'name'        => $row['name'],
+            'slug'        => Str::slug($row['name'], '-'),
         ]);
     }
 }
