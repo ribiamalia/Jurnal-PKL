@@ -34,7 +34,7 @@ class Student extends Model
         {
             return $this->belongsTo(Parents::class, 'parents_id');
         }
-           public function departements (){
+           public function departements(){
             return $this->belongsTo(Departemen::class, 'departemen_id');
         }
            public function teachers(){

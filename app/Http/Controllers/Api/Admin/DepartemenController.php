@@ -8,6 +8,7 @@ use App\Models\Departemen;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\DepartemenResources;
 use App\Models\Classes;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -103,7 +104,7 @@ class DepartemenController extends Controller
         if ($departemen) {
             // Set departemen_id di tabel classes menjadi null
             Classes::where('departemen_id', $id)->update(['departemen_id' => null]);
-            User::where('departemen_id', $id)->update(['departemen_id' => null]);
+            Student::where('departemen_id', $id)->update(['departemen_id' => null]);
 
             // Hapus departemen
             $departemen->delete();

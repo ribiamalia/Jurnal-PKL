@@ -75,10 +75,12 @@ class PermissionsTableSeeder extends Seeder
 
         //  permission::create(['name' => 'permission.index', 'guard_name' => 'api']);
 
-        permission::create(['name' => 'siswa.index', 'guard_name' => 'api']);
-         permission::create(['name' => 'siswa.edit', 'guard_name' => 'api']);
-         permission::create(['name' => 'siswa.create', 'guard_name' => 'api']);
-         permission::create(['name' => 'siswa.delete', 'guard_name' => 'api']); 
+        // permission::create(['name' => 'siswa.index', 'guard_name' => 'api']);
+        //  permission::create(['name' => 'siswa.edit', 'guard_name' => 'api']);
+        //  permission::create(['name' => 'siswa.create', 'guard_name' => 'api']);
+        //  permission::create(['name' => 'siswa.delete', 'guard_name' => 'api']); 
+
+        permission::create(['name' => 'jurusan', 'guard_name' => 'api']); 
 
        
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Activity;
 use App\Http\Resources\ActivityResource;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -157,10 +158,9 @@ class ActivityController extends Controller
 
     public function index()
     {
-        // Mendapatkan daftar activity dari database dengan filter berdasarkan departemen_id dan classes_id
+        // Mendapatkan daftar activity dari database dengan filter dan pengelompokan berdasarkan user_id
         $activity = Activity::when(request()->search, function($query) {
             // Jika ada parameter pencarian (search) di URL
-            // Maka tambahkan kondisi WHERE untuk mencari activity berdasarkan deskripsi
             $query->where('description', 'like', '%' . request()->search . '%');
         })
         ->when(request()->departemen_id, function($query) {
@@ -176,19 +176,18 @@ class ActivityController extends Controller
             });
         })
         ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+        ->groupBy('user_id') // Mengelompokkan data berdasarkan user_id
         ->latest() // Mengurutkan activity dari yang terbaru
         ->paginate(15); // Membuat paginasi dengan 15 item per halaman
     
         // Menambahkan parameter pencarian ke URL pada hasil paginasi
-        $activity->appends([
-            'search' => request()->search,
-            'departemen_id' => request()->departemen_id,
-            'classes_id' => request()->classes_id
-        ]);
+        $activity->appends(request()->only(['search', 'departemen_id', 'classes_id']));
     
         // Mengembalikan response dalam bentuk ActivityResource
         return new ActivityResource(true, 'List Data Activity', $activity);
     }
+    
+    
     
 
     public function show($id)

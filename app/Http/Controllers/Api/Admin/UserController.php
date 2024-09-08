@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\TeacherResources;
+use App\Imports\StudentImport;
 use App\Imports\UsersImport;
+use App\Models\Departemen;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Industry;
 use App\Models\Student;
@@ -18,14 +20,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
 
 
-public function export()
+public function export($role)
 {
-    return Excel::download(new UsersExport, 'users.xlsx');
+    return Excel::download(new UsersExport($role), 'users_'.$role.'.xlsx');
 }
 
     public function import(Request $request) 
@@ -36,6 +39,20 @@ public function export()
 
     try {
         Excel::import(new UsersImport, $request->file('file'));
+
+        return response()->json(['success' => true, 'message' => 'Data berhasil diimpor.']);
+    } catch (\Throwable $e) {
+        return response()->json(['success' => false, 'message' => 'Gagal mengimpor data: ' . $e->getMessage()], 500);
+    }
+}
+    public function importStudent(Request $request) 
+{
+    $request->validate([
+        'file' => ['required', 'file'],
+    ]);
+
+    try {
+        Excel::import(new StudentImport, $request->file('file'));
 
         return response()->json(['success' => true, 'message' => 'Data berhasil diimpor.']);
     } catch (\Throwable $e) {
@@ -73,7 +90,7 @@ public function export()
 
         // Create user
         $user = User::create([
-            'name'      => $request->name,
+            'name'      => $request->username,
             'password'  => bcrypt($request->password)
         ]);
 
@@ -93,6 +110,9 @@ public function export()
                     break;
                 case 'industri':
                     $this->createIndustry($user, $request);
+                    break;
+                case 'jurusan':
+                    $this->createDepartemen($user, $request);
                     break;
                 default:
                     return response()->json(['error' => 'Peran tidak valid.'], 400);
@@ -192,6 +212,27 @@ public function export()
         }
     }
 
+    private function createDepartemen($user, $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'  => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            throw new \Exception('Validasi data guru gagal: ' . $validator->errors()->first());
+        }
+
+        $departemen = Departemen::create([
+            'name'        => $request->name,
+            'slug' => Str::slug($request->name, '-'),
+            'user_id'     => $user->id,
+        ]);
+
+        if (!$departemen) {
+            throw new \Exception('Data jurusan gagal disimpan.');
+        }
+    }
+
     // public function show($id)
     // {
     //     $user = User::with('roles')->whereId($id)->first();
@@ -268,6 +309,10 @@ public function export()
                     // Hapus data industri jika ada
                     Industry::where('user_id', $id)->delete();
                     break;
+                case 'jurusan':
+                    // Hapus data industri jika ada
+                    Departemen::where('user_id', $id)->delete();
+                    break;
             }
         }
 
@@ -307,6 +352,9 @@ public function show($id)
                     break;
                 case 'industri':
                     $userData['industry'] = $user->industry;
+                    break;
+                case 'jurusan':
+                    $userData['departemen'] = $user->departemen;
                     break;
             }
         }
@@ -365,6 +413,9 @@ public function update(Request $request, $id)
                 case 'industri':
                     $this->updateIndustry($user, $request);
                     break;
+                case 'jurusan':
+                    $this->updateDepartemen($user, $request);
+                    break;
             }
         }
     } catch (\Exception $e) {
@@ -405,6 +456,17 @@ private function updateTeacher($user, $request)
             'name'        => $request->name,
             'no_hp'       => $request->no_hp,
             'departemen_id' => $request->departemen_id,
+        ]);
+    }
+}
+private function updateDepartemen($user, $request)
+{
+    $departemen = $user->departemens()->first();
+
+    if ($departemen) {
+        $departemen->update([
+            'name'        => $request->name,
+            'slug' => Str::slug($request->name, '-'),
         ]);
     }
 }
@@ -501,6 +563,11 @@ public function indexbyrole()
         $students = Student::with('industries', 'teachers', 'departements', 'classes', 'parents')
             ->where('industri_id', $user->industries->id)
             ->paginate(10);
+    } elseif ($user->hasRole('jurusan')) {
+        // Jika pengguna adalah industri, tampilkan data siswa yang terkait dengan industri tersebut
+        $students = Student::with('industries', 'teachers', 'departements', 'classes', 'parents')
+            ->where('departemen_id', $user->departements->id)
+            ->paginate(10);
     } else {
         // Jika pengguna tidak memiliki peran yang relevan, kembalikan data kosong
         $students = collect([]);
@@ -517,7 +584,7 @@ public function storeStudentWithParent(Request $request)
         // Validasi data input
         $request->validate([
             'name' => 'required',
-            'password' => 'required|string|confirmed|min:6',
+            'password' => 'required|string|confirmed',
             'roles' => 'required',
             'nis' => 'required',
             'placeOfBirth' => 'required',
@@ -526,64 +593,27 @@ public function storeStudentWithParent(Request $request)
             'alamat' => 'required',
             'classes_id' => 'required',
             'industri_id' => 'required',
-            'departemen_id' => 'required',
+            'departemen_id' => 'nullable',
             'teacher_id' => 'required',
             'image' => 'nullable',
 
             // Data Orang Tua
             'parent_name' => 'required|string|max:255',
-            'parent_placeOfBirth' => 'required',
-            'parent_dateOfBirth' => 'required',
             'parent_gender' => 'required',
             'parent_alamat' => 'required',
             'parent_occupation' => 'required',
             'parent_phoneNumber' => 'required',
-            'parent_password' => 'required|string|confirmed|min:6', // Password orang tua
+            'parent_password' => 'required|string|confirmed', // Password orang tua
         ]);
 
-        // Buat User untuk Siswa
-        $user = User::create([
-            'name' => $request->name,
-            'password' => bcrypt($request->password)
-        ]);
-        
-        // Assign role siswa
-        $user->assignRole('siswa');
-
+        // Buat User untuk Orang Tua
         $parentUser = User::create([
-            'name' => $request->parent_name,
-            'password' =>bcrypt($request->password)
+            'name' => $request->parent_username,
+            'password' => bcrypt($request->parent_password) // Ganti dengan parent_password
         ]);
 
         // Assign role orang tua
         $parentUser->assignRole('orang tua');
-
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('students', 'public');
-        }
-
-
-        // Buat Student
-        $student = Student::create([
-            'user_id' => $user->id,
-            'nis' => $request->nis,
-            'name' => $request->student_name,
-            'placeOfBirth' => $request->placeOfBirth,
-            'dateOfBirth' => $request->dateOfBirth,
-            'gender' => $request->gender,
-            'bloodType' => $request->bloodType,
-            'alamat' => $request->alamat,
-            'classes_id' => $request->classes_id,
-            'industri_id' => $request->industri_id,
-            'departemen_id' => $request->departemen_id,
-            'teacher_id' => $request->teacher_id,
-            'parents_id'    => $parentUser->id,
-            'image' => $imagePath
-        ]);
-
-        // Buat User untuk Orang Tua
-        
 
         // Buat Parents
         $parents = Parents::create([
@@ -595,17 +625,54 @@ public function storeStudentWithParent(Request $request)
             'phoneNumber' => $request->parent_phoneNumber,
         ]);
 
-        DB::commit();
+        // Cek apakah data orang tua berhasil disimpan
+        if ($parents) {
+            // Buat User untuk Siswa
+            $user = User::create([
+                'name' => $request->username,
+                'password' => bcrypt($request->password)
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Data Siswa dan Orang Tua Berhasil Disimpan',
-            'data' => [
-                'student' => $student,
-                'parent' => $parents
-            ]
-        ], 201);
-        
+            // Assign role siswa
+            $user->assignRole('siswa');
+
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('students', 'public');
+            }
+
+            // Buat Student
+            $student = Student::create([
+                'user_id' => $user->id,
+                'nis' => $request->nis,
+                'name' => $request->name,
+                'placeOfBirth' => $request->placeOfBirth,
+                'dateOfBirth' => $request->dateOfBirth,
+                'gender' => $request->gender,
+                'bloodType' => $request->bloodType,
+                'alamat' => $request->alamat,
+                'classes_id' => $request->classes_id,
+                'industri_id' => $request->industri_id,
+                'departemen_id' => $request->departemen_id,
+                'teacher_id' => $request->teacher_id,
+                'parents_id' => $parents->id, // Menggunakan parents_id yang telah disimpan
+                'image' => $imagePath
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Siswa dan Orang Tua Berhasil Disimpan',
+                'data' => [
+                    'student' => $student,
+                    'parent' => $parents
+                ]
+            ], 201);
+        } else {
+            throw new \Exception('Gagal menyimpan data orang tua');
+        }
+
     } catch (\Exception $e) {
         DB::rollback();
         return response()->json([
@@ -614,9 +681,4 @@ public function storeStudentWithParent(Request $request)
         ], 500);
     }
 }
-
-
-
-
-
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\AspekProduktifController;
+use App\Http\Controllers\Api\Admin\ScheduleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Models\AspekProduktif;
 use Illuminate\Http\Request;
@@ -103,11 +104,12 @@ Route::prefix('admin')->group(function () {
 
         Route::post('/storeStudentandParent', [UserController::class, 'storeStudentWithParent']);
 
+        Route::post('/importStudent', [UserController::class, 'importStudent']);
         Route::post('/import', [UserController::class, 'import']);
-        Route::get('/export-users', [UserController::class, 'export']);
+        Route::get('/export-users/{role}', [UserController::class, 'export']);
 
         Route::apiResource('/produktif', AspekProduktifController::class);
-
+        Route::get('/getSchedulleStudent', [ScheduleController::class, 'indexStudent']);
 
     });
 
