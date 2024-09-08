@@ -34,18 +34,18 @@ class UsersExport implements FromCollection, WithHeadings
         switch ($role) {
             case 'siswa':
                 return [
-                    'nis'           => optional($user->student)->nis,
-                    'placeOfBirth'  => optional($user->student)->placeOfBirth,
-                    'dateOfBirth'   => optional($user->student)->dateOfBirth,
-                    'gender'        => optional($user->student)->gender,
-                    'alamat'        => optional($user->student)->alamat,
-                    'classes_id'    => optional($user->student)->classes_id,
-                    'industri_id'   => optional($user->student)->industri_id,
+                    'nis'           => optional($user->students)->nis,
+                    'placeOfBirth'  => optional($user->students)->placeOfBirth,
+                    'dateOfBirth'   => optional($user->students)->dateOfBirth,
+                    'gender'        => optional($user->students)->gender,
+                    'alamat'        => optional($user->students)->alamat,
+                    'classes_id'    => optional($user->students)->classes_id,
+                    'industri_id'   => optional($user->students)->industri_id,
                 ];
             case 'guru':
                 return [
-                    'no_hp'         => optional($user->teacher)->no_hp,
-                    'departemen_id' => optional($user->teacher)->departemen_id,
+                    'no_hp'         => optional($user->teachers)->no_hp,
+                    'departemen_id' => optional($user->teachers)->departemen_id,
                 ];
             case 'orang tua':
                 return [
@@ -54,13 +54,17 @@ class UsersExport implements FromCollection, WithHeadings
                 ];
             case 'industri':
                 return [
-                    'bidang'        => optional($user->industry)->bidang,
-                    'alamat_industri'=> optional($user->industry)->alamat,
-                    'longitude'     => optional($user->industry)->longitude,
-                    'latitude'      => optional($user->industry)->latitude,
-                    'mentorName'    => optional($user->industry)->industryMentorName,
-                    'mentorNo'      => optional($user->industry)->industryMentorNo,
+                    'bidang'        => optional($user->industries)->bidang,
+                    'alamat_industri'=> optional($user->industries)->alamat,
+                    'longitude'     => optional($user->industries)->longitude,
+                    'latitude'      => optional($user->industries)->latitude,
+                    'mentorName'    => optional($user->industries)->industryMentorName,
+                    'mentorNo'      => optional($user->industries)->industryMentorNo,
                 ];
+                case 'jurusan':
+                    return [
+                        'name'         => optional($user->departements)->name,
+                    ];
             default:
                 return [];
         }
@@ -97,6 +101,8 @@ class UsersExport implements FromCollection, WithHeadings
             'Latitude',
             'Mentor Name',
             'Mentor No',
+
+            'Name'
         ];
     }
 }
