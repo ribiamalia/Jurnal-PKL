@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\ActivityController;
 use App\Http\Controllers\Api\Admin\AspekProduktifController;
 use App\Http\Controllers\Api\Admin\ScheduleController;
 use App\Http\Controllers\Api\Admin\UserController;
@@ -110,6 +111,10 @@ Route::prefix('admin')->group(function () {
 
         Route::apiResource('/produktif', AspekProduktifController::class);
         Route::get('/getSchedulleStudent', [ScheduleController::class, 'indexStudent']);
+
+        Route::get('/indexGroup', [ActivityController::class, 'indexGroupedByUserIdWithActivities']);
+        Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
+        Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
 
     });
 

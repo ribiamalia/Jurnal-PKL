@@ -384,7 +384,7 @@ public function update(Request $request, $id)
     }
 
     // Update user data
-    $user->name = $request->name;
+    $user->name = $request->username;
 
     if ($request->password) {
         $user->password = bcrypt($request->password);

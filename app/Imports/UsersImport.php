@@ -28,7 +28,7 @@ class UsersImport implements ToModel, WithHeadingRow
     }
         // Buat user baru
         $user = User::create([
-            'name'      => $row['name'],
+            'name'      => $row['username'],
             'password'  => Hash::make($row['password']),
         ]);
 
@@ -48,6 +48,9 @@ class UsersImport implements ToModel, WithHeadingRow
                 break;
             case 'industri':
                 $this->createIndustry($user, $row);
+                break;
+            case 'jurusan':
+                $this->createDepartemen($user, $row);
                 break;
             default:
                 throw new \Exception('Peran tidak valid.');
@@ -121,7 +124,7 @@ class UsersImport implements ToModel, WithHeadingRow
     {
         Parents::create([
             'user_id'     => $user->id,
-            'nama'        => $user->name,
+            'nama'        => $row['name'],
             'gender'      => $row['gender'],
             'alamat'      => $row['alamat'],
             'occupation'  => $row['occupation'],
@@ -140,6 +143,13 @@ class UsersImport implements ToModel, WithHeadingRow
             'latitude'    => $row['latitude'],
             'industryMentorName' => $row['industrymentorname'],
             'industryMentorNo'   => $row['industrymentorno'],
+        ]);
+    }
+    private function createDepartemen($user, $row)
+    {
+        Departemen::create([
+            'user_id'     => $user->id,
+            'name'        => $row['name'],
         ]);
     }
 }

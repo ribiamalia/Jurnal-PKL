@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Activity;
 use App\Http\Resources\ActivityResource;
+use App\Models\Student;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -233,8 +234,116 @@ class ActivityController extends Controller
 
     }
 
-    
+    public function showByUserId($user_id)
+{
+    // Mencari activity berdasarkan user_id dengan relasi yang diperlukan
+    $activities = Activity::with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries')
+        ->where('user_id', $user_id)
+        ->get();
 
+    // Jika tidak ada aktivitas yang ditemukan untuk user_id tersebut, kembalikan pesan error
+    if ($activities->isEmpty()) {
+        return response()->json(['success' => false, 'message' => 'Aktivitas tidak ditemukan untuk user_id ini.'], 404);
+    }
+
+    // Jika aktivitas ditemukan, kembalikan data
+    return response()->json([
+        'success' => true,
+        'message' => 'Detail Aktivitas untuk user_id ' . $user_id,
+        'data' => $activities,
+    ], 200);
+}
+
+
+    public function indexGroupedByUserIdWithActivities()
+{
+    // Mengambil daftar activity dari database dengan filter dan pengelompokan berdasarkan user_id
+    $activities = Activity::when(request()->search, function($query) {
+            // Jika ada parameter pencarian (search) di URL
+            $query->where('description', 'like', '%' . request()->search . '%');
+        })
+        ->when(request()->departemen_id, function($query) {
+            // Jika ada parameter departemen_id di URL
+            $query->whereHas('users.students', function($query) {
+                $query->where('departemen_id', request()->departemen_id);
+            });
+        })
+        ->when(request()->classes_id, function($query) {
+            // Jika ada parameter classes_id di URL
+            $query->whereHas('users.students', function($query) {
+                $query->where('classes_id', request()->classes_id);
+            });
+        })
+        ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') // Mengambil relasi yang diperlukan
+        ->orderBy('user_id') // Mengurutkan berdasarkan user_id
+        ->latest() // Mengurutkan activity dari yang terbaru
+        ->get()
+        ->groupBy('user_id'); // Mengelompokkan activity berdasarkan user_id
+    
+    // Menambahkan parameter pencarian ke URL pada hasil paginasi (jika ada paginasi)
+    // return $activities;
+
+    // Membuat custom response untuk menampilkan data terkelompok berdasarkan user_id
+    $groupedActivities = $activities->map(function ($activities, $userId) {
+        return [
+            'user_id' => $userId,
+            'total_activities' => $activities->count(), // Jumlah aktivitas per user
+            'activities' => $activities->map(function ($activity) {
+                return [
+                    'id' => $activity->id,
+                    'date' => $activity->date,
+                    'start_time' => $activity->start_time,
+                    'end_time' => $activity->end_time,
+                    'description' => $activity->description,
+                    'tools' => $activity->tools,
+                    'image' => $activity->image,
+                    'related_data' => [
+                        'class' => $activity->users->students->classes->name ?? null,
+                        'departement' => $activity->users->students->departements->name ?? null,
+                        'teacher' => $activity->users->students->teachers->name ?? null,
+                        'parent' => $activity->users->students->parents->name ?? null,
+                        'industry' => $activity->users->students->industries->name ?? null,
+                    ],
+                ];
+            }),
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'List Data Activity grouped by user_id',
+        'data' => $groupedActivities
+    ], 200);
+}
+
+
+    
+public function indexActivityForTeacher()
+{
+    $user = auth()->guard('api')->user(); // Mendapatkan user yang sedang login
+
+    // Pastikan user memiliki peran 'guru'
+    if ($user->hasRole('guru')) {
+        // Mendapatkan data activity berdasarkan teacher_id dari siswa
+        $activities = Activity::whereHas('users.students', function ($query) use ($user) {
+            $query->where('teacher_id', $user->teachers->id); // Filter berdasarkan teacher_id dari tabel teachers
+        })
+        ->with('user.students.classes', 'user.students.departements', 'user.students.parents', 'user.students.teachers', 'user.students.industries') // Memuat relasi yang diperlukan
+        ->groupBy('user_id') // Mengelompokkan berdasarkan user_id (siswa)
+        ->latest() // Mengurutkan berdasarkan data terbaru
+        ->paginate(15); // Membuat paginasi 15 item per halaman
+
+        // Mengembalikan response dengan data activity yang difilter
+        return response()->json([
+            'success' => true,
+            'message' => 'List Activity untuk guru',
+            'data' => $activities
+        ], 200);
+    }
+
+    // Jika user bukan guru, kembalikan pesan error
+    return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses untuk melihat aktivitas ini.'], 403);
+}
 
 
 }
