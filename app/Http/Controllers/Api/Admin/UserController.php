@@ -64,7 +64,7 @@ public function export($role)
 
     public function index()
     {
-        $users = User::with('students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries')
+        $users = User::with('students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries', 'departements')
             ->when(request()->search, function($query) {
                 return $query->where('name', 'like', '%' . request()->search . '%');
             })
@@ -329,7 +329,7 @@ public function export($role)
 public function show($id)
 {
     // Temukan user berdasarkan ID
-    $user = User::with(['roles', 'students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries'])->find($id);
+    $user = User::with(['roles', 'students.industries','students.teachers','students.departements','students.classes','students.parents', 'teachers.students', 'parents.students', 'industries', 'departements'])->find($id);
 
     if ($user) {
         $userData = [
@@ -351,7 +351,7 @@ public function show($id)
                     $userData['parent'] = $user->parents;
                     break;
                 case 'industri':
-                    $userData['industry'] = $user->industry;
+                    $userData['industries'] = $user->industries;
                     break;
                 case 'jurusan':
                     $userData['departemen'] = $user->departemen;
