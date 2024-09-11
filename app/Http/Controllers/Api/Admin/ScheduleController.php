@@ -112,16 +112,9 @@ class ScheduleController extends Controller
 {
     // Ambil user yang sedang login
     $authUser = auth()->guard('api')->user();
-    $teacher = $authUser->teachers;
     // Cek apakah pengguna adalah guru
-    $isTeacher = $teacher ? $teacher ->hasRole('guru') : null;
+    $isTeacher = $authUser ->hasRole('guru');
 
-    if (!$isTeacher) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Industri tidak ditemukan untuk guru yang sedang login',
-        ], 404);
-    }
 
 
     // Jika pengguna adalah guru, tampilkan jadwal berdasarkan user_id guru

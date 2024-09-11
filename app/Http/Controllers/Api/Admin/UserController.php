@@ -461,7 +461,7 @@ private function updateTeacher($user, $request)
 }
 private function updateDepartemen($user, $request)
 {
-    $departemen = $user->departemens()->first();
+    $departemen = $user->departements()->first();
 
     if ($departemen) {
         $departemen->update([
