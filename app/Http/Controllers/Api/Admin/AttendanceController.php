@@ -93,11 +93,11 @@ public function index()
 
     $attendance = Attendance::when($search, function ($query) use ($search) {
         
-        $query->whereHas('users', function ($q) use ($search) {
+        $query->whereHas('users.students', function ($q) use ($search) {
             $q->where('name', 'like', '%' . $search . '%');
         });
     })
-    ->with('users.students') 
+    ->with('users.students.classes', 'users.students.teachers', 'users.students.departements', 'users.students.parents', 'users.students.industries') 
     ->orderBy('date', 'asc') 
     ->orderBy('departureTime', 'asc') 
     ->get() 
