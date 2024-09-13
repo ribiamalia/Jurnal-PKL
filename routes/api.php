@@ -116,6 +116,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
         Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
 
+        Route::get('/indexGroup', [ActivityController::class, 'indexGroupedByUserIdWithActivities']);
+        Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
+        Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
+
     });
 
 });
