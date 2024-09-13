@@ -97,7 +97,7 @@ public function index()
             $q->where('name', 'like', '%' . $search . '%');
         });
     })
-    ->with('users') 
+    ->with('users.students') 
     ->orderBy('date', 'asc') 
     ->orderBy('departureTime', 'asc') 
     ->get() 
@@ -262,6 +262,38 @@ public function indexStudent()
 }
 
 
+public function update(Request $request, $id)
+{
+    // Cek apakah pengguna yang sedang login memiliki peran 'industri'
+    $user = auth()->guard('api')->user();
+
+    if (!$user->hasRole('industri')) {
+        return response()->json(['error' => 'Unauthorized. Only industry users can verify attendance.'], 403);
+    }
+
+    // Validasi input
+    $validator = Validator::make($request->all(), [
+        'verified' => 'required', // Kolom verified wajib dan harus berupa boolean
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()->first()], 422);
+    }
+
+    // Cari data attendance berdasarkan ID
+    $attendance = Attendance::find($id);
+
+    if (!$attendance) {
+        return response()->json(['error' => 'Attendance record not found'], 404);
+    }
+
+    // Update kolom verified
+    $attendance->verified = $request->verified;
+    $attendance->save();
+
+    // Mengembalikan response dengan data yang sudah diupdate
+    return new AttendanceResource(true, 'Attendance verification updated successfully', $attendance);
+}
 
     
 }

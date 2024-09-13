@@ -20,7 +20,8 @@ class Attendance extends Model
             'longitude',
             'latitude',
             'status',
-            'description'
+            'description',
+            'verified'
     ];
 
     public function users()
