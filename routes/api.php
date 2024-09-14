@@ -86,6 +86,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/parentabsence/{parentId}', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'getStudent']);
         Route::get('/absenSiswa', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'indexRole']);
         Route::get('/absenSiswaOnly', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'IndexStudent']);
+        Route::get('/absen-cek', [\App\Http\Controllers\Api\Admin\AttendanceController::class, 'hasCheckedInToday']);
 
         Route::apiResource('/jurnal', \App\Http\Controllers\Api\Admin\ActivityController::class);
         Route::get('/StudentOnly', [\App\Http\Controllers\Api\Admin\ActivityController::class, 'indexStudentOnly']);
@@ -116,9 +117,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
         Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
 
-        Route::get('/indexGroup', [ActivityController::class, 'indexGroupedByUserIdWithActivities']);
-        Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
-        Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
 
     });
 
