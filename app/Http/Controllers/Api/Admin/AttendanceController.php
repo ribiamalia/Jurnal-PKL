@@ -304,19 +304,33 @@ public function hasCheckedInToday()
     $currentDate = Carbon::now()->toDateString();
 
     // Cek apakah sudah ada absensi masuk (status: Masuk) untuk hari ini
-    $attendance = Attendance::where('user_id', $userId)
+    $checkIn = Attendance::where('user_id', $userId)
         ->where('date', $currentDate)
         ->where('status', 'Masuk')
         ->first();
 
-    if ($attendance) {
-        // Jika absensi dengan status 'Masuk' ditemukan
-        return response()->json(['message' => 'Sudah absen masuk hari ini'], 200);
+    if ($checkIn) {
+        // Cek apakah sudah ada absensi pulang (status: Pulang) untuk hari ini
+        $checkOut = Attendance::where('user_id', $userId)
+            ->where('date', $currentDate)
+            ->where('status', 'Pulang')
+            ->first();
+
+        if ($checkOut) {
+            // Jika absensi dengan status 'Pulang' ditemukan
+            return response()->json(['message' => 'Anda sudah absen pulang hari ini, tidak bisa absen lagi.'], 200);
+        }
+
+        // Jika belum absen pulang, arahkan untuk absen pulang
+        return response()->json(['message' => 'Pulang'], 200);
     }
 
-    // Jika belum ada absensi dengan status 'Masuk' untuk hari ini
-    return response()->json(['message' => 'Belum absen masuk hari ini'], 200);
+    // Jika belum ada absensi masuk untuk hari ini
+    return response()->json(['message' => 'Masuk'], 200);
 }
+
+
+
 
     
 }
