@@ -299,18 +299,22 @@ public function export($role)
                     break;
                 case 'guru':
                     // Hapus data guru jika ada
+                    User::where('teacher_id', $user->teachers->id)->update(['teacher_id' => null]);
                     Teacher::where('user_id', $id)->delete();
                     break;
                 case 'orang tua':
                     // Hapus data orang tua jika ada
+                    User::where('parents_id', $user->parents->id)->update(['parents_id' => null]);
                     Parents::where('user_id', $id)->delete();
                     break;
                 case 'industri':
                     // Hapus data industri jika ada
+                    User::where('industri_id', $user->industries->id)->update(['industri_id' => null]);
                     Industry::where('user_id', $id)->delete();
                     break;
                 case 'jurusan':
                     // Hapus data industri jika ada
+                    User::where('departemen_id', $user->departements->id)->update(['departemen_id' => null]);
                     Departemen::where('user_id', $id)->delete();
                     break;
             }
