@@ -89,10 +89,14 @@ public function export($role)
         }
 
         // Create user
+        \Log::info('Membuat user baru: ' . $request->username);
+
         $user = User::create([
-            'name'      => $request->username,
-            'password'  => bcrypt($request->password)
+            'name' => $request->username,
+            'password' => bcrypt($request->password)
         ]);
+        
+        \Log::info('User berhasil dibuat: ' . $user->id);
 
         // Assign roles to user
         $user->assignRole($request->roles);
