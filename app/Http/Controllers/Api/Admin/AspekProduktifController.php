@@ -221,6 +221,7 @@ public function indexPerSiswa(Request $request)
             'average_score' => $penilaian->avg('score'), // Rata-rata nilai
             'scores' => $penilaian->map(function($item) {
                 return [
+                    'id' => $item->id, // Nama aspek produktif
                     'name' => $item->name, // Nama aspek produktif
                     'score' => $item->score // Nilai
                 ];
