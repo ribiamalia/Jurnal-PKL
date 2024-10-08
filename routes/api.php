@@ -117,6 +117,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/showJurnalByUser/{user_id}', [ActivityController::class, 'showByUserId']);
         Route::get('/showJurnalByTeacher', [ActivityController::class, 'indexActivityForTeacher']);
 
+        Route::get('/aspek-produktif/per-siswa', [AspekProduktifController::class, 'indexPerSiswa']);
+        
+
 
     });
 

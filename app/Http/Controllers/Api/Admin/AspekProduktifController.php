@@ -190,5 +190,52 @@ public function destroy($id)
     }
 }
 
+
+
+public function indexPerSiswa(Request $request)
+{
+    // Mengambil data penilaian per student_id dan menyertakan relasi industries dan students
+    $produktif = AspekProduktif::when($request->search, function($query) {
+        // Jika ada parameter pencarian (search) di URL
+        $query->where('name', 'like', '%' . request()->search . '%');
+    })
+    ->when($request->student_id, function($query) use ($request) {
+        // Jika ada parameter student_id di URL
+        $query->where('student_id', $request->student_id);
+    })
+    ->with('students', 'industries') // Memuat relasi students dan industries
+    ->get() // Mengambil semua data
+    ->groupBy('student_id'); // Mengelompokkan data berdasarkan student_id
+
+    // Menyiapkan array untuk output
+    $result = [];
+
+    // Looping setiap grup student_id
+    foreach ($produktif as $studentId => $penilaian) {
+        // Memasukkan data grup ke dalam array hasil
+        $result[] = [
+            'student_id' => $studentId, // ID Siswa
+            'student_name' => $penilaian->first()->students->name ?? 'N/A', // Nama Siswa (mengambil nama dari relasi students)
+            'industry_name' => $penilaian->first()->industries->name ?? 'N/A', // Nama Industri (mengambil dari relasi industries)
+            'total_scores' => $penilaian->count(), // Total penilaian
+            'average_score' => $penilaian->avg('score'), // Rata-rata nilai
+            'scores' => $penilaian->map(function($item) {
+                return [
+                    'name' => $item->name, // Nama aspek produktif
+                    'score' => $item->score // Nilai
+                ];
+            }) // Mengembalikan daftar nilai untuk setiap aspek
+        ];
+    }
+
+    // Mengembalikan response JSON
+    return response()->json([
+        'success' => true,
+        'message' => 'List Penilaian per Siswa',
+        'data' => $result
+    ], 200);
+}
+
+
 }
 

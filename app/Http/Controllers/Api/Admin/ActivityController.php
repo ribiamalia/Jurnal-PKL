@@ -346,4 +346,38 @@ public function indexActivityForTeacher()
 }
 
 
+public function updateVerified(Request $request, $id)
+{
+    // Cek apakah pengguna yang sedang login memiliki peran 'industri'
+    $user = auth()->guard('api')->user();
+
+    if (!$user->hasRole('industri')) {
+        return response()->json(['error' => 'Unauthorized. Only industry users can verify activities.'], 403);
+    }
+
+    // Validasi input
+    $validator = Validator::make($request->all(), [
+        'verified' => 'required', // Kolom verified wajib dan harus berupa boolean
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['error' => $validator->errors()->first()], 422);
+    }
+
+    // Cari data attendance berdasarkan ID
+    $activities = Activity::find($id);
+
+    if (!$activities) {
+        return response()->json(['error' => 'activities record not found'], 404);
+    }
+
+    // Update kolom verified
+    $activities->verified = $request->verified;
+    $activities->save();
+
+    // Mengembalikan response dengan data yang sudah diupdate
+    return new ActivityResource(true, 'Attendance verification updated successfully', $activities);
+}
+
+
 }
